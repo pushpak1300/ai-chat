@@ -3,6 +3,7 @@ import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItemType, SharedData } from '@/types';
 import ModelSelector from '@/components/chat/ModelSelector.vue';
+import VisibilitySelector from '@/components/chat/VisibilitySelector.vue';
 import { usePage } from '@inertiajs/vue3';
 
 withDefaults(defineProps<{
@@ -26,6 +27,7 @@ const page = usePage<SharedData>()
         </div>
         <div class="flex items-center gap-2" v-if="page.url.startsWith('/chat')">
             <ModelSelector />
+            <VisibilitySelector />
         </div>
     </header>
 </template>

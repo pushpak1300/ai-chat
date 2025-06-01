@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('role');
             $table->json('parts');
             $table->string('attachments');
+            $table->boolean('is_upvoted')->nullable();
             $table->timestamps();
         });
     }

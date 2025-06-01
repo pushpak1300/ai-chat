@@ -21,7 +21,6 @@
         :attachments="attachments"
         :messages="messages"
         :is-at-bottom="isAtBottom"
-        :selected-visibility-type="initialVisibilityType"
         @set-input="$emit('setInput', $event)"
         @set-attachments="$emit('setAttachments', $event)"
         @set-messages="$emit('setMessages', $event)"
@@ -39,7 +38,6 @@ import { ref } from 'vue'
 import Messages from '@/components/chat/Messages.vue'
 import MultimodalInput from '@/components/chat/MultimodalInput.vue'
 import { type Message } from '@/types/index';
-import { Visibility } from '@/types/enum'
 
 withDefaults(defineProps<{
     messages?: Array<Message>
@@ -47,7 +45,6 @@ withDefaults(defineProps<{
     streamId?: string
     attachments?: Array<string>
     votes?: Array<Record<string, any>>
-    initialVisibilityType?: Visibility
     isReadonly?: boolean
     chatId?: string
 }>(), {
@@ -56,7 +53,6 @@ withDefaults(defineProps<{
     streamId: '',
     attachments: () => [],
     votes: () => [],
-    initialVisibilityType: Visibility.PRIVATE,
     isReadonly: false,
     chatId: '',
 })

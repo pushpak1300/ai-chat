@@ -24,8 +24,6 @@
 
     <VisibilitySelector
       v-if="!isReadonly"
-      :chat-id="chatId"
-      :selected-visibility-type="selectedVisibilityType"
       class="order-1 md:order-3"
     />
 
@@ -54,21 +52,24 @@ import SidebarToggle from '@/components/chat/SidebarToggle.vue'
 import ModelSelector from '@/components/chat/ModelSelector.vue'
 import VisibilitySelector from '@/components/chat/VisibilitySelector.vue'
 import { Icon } from '@iconify/vue'
+import { provideVisibility } from '@/composables/useVisibility'
+import { Visibility } from '@/types/enum'
 
 interface Props {
   chatId: string
   selectedModelId: string
-  selectedVisibilityType: 'private' | 'public'
+  selectedVisibilityType: Visibility
   isReadonly: boolean
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+provideVisibility(props.selectedVisibilityType)
 
 const { open } = useSidebar()
 const { width: windowWidth } = useWindowSize()
 
 const handleNewChat = () => {
-  // Navigate to new chat or refresh current chat
   window.location.href = '/'
 }
 </script>

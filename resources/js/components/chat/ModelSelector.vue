@@ -38,7 +38,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Icon } from '@iconify/vue'
-import { ref } from 'vue'
+import { useStorage } from '@vueuse/core'
 
 const availableModels = [
   {
@@ -53,7 +53,7 @@ const availableModels = [
   },
 ]
 
-const selectedModel = ref(availableModels[0])
+const selectedModel = useStorage('selected-model', availableModels[0])
 
 const selectModel = (model: any) => {
   selectedModel.value = model

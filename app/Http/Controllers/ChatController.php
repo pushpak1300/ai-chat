@@ -59,18 +59,18 @@ final class ChatController extends Controller
 
     public function update(Chat $chat, UpdateChatRequest $request)
     {
-        if ($request->has('message_id')) {
+        if ($request->filled('message_id')) {
             $message = $chat->messages()->find($request->string('message_id'));
 
-            if (!$message) {
-                return;
+            if (! $message) {
+                return null;
             }
 
-            if ($request->has('is_upvoted')) {
+            if ($request->filled('is_upvoted')) {
                 $message->update(['is_upvoted' => $request->boolean('is_upvoted')]);
             }
 
-            if ($request->has('message')) {
+            if ($request->filled('message')) {
                 $chat->messages()
                     ->where('created_at', '>', $message->created_at)
                     ->delete();
@@ -81,15 +81,15 @@ final class ChatController extends Controller
 
         $updates = [];
 
-        if ($request->has('title')) {
+        if ($request->filled('title')) {
             $updates['title'] = $request->string('title');
         }
 
-        if ($request->has('visibility')) {
+        if ($request->filled('visibility')) {
             $updates['visibility'] = $request->string('visibility');
         }
 
-        if (!empty($updates)) {
+        if ($updates !== []) {
             $chat->update($updates);
         }
 

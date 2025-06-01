@@ -1,29 +1,31 @@
 <template>
     <DropdownMenu>
         <DropdownMenuTrigger as-child>
-            <Button data-testid="visibility-selector" variant="outline" class="hidden md:flex md:px-2 md:h-[34px]">
-                <component :is="selectedVisibility?.icon" />
-                {{ selectedVisibility?.label }}
-                <Icon icon="lucide:arrow-down" />
+            <Button data-testid="visibility-selector" variant="outline" class="md:px-2 md:h-[34px]">
+                <Icon :icon="selectedVisibility.icon" class="mr-2" />
+                {{ selectedVisibility.label }}
+                <Icon icon="lucide:chevron-down" class="ml-auto" />
             </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" class="min-w-[300px]">
-            <DropdownMenuItem v-for="visibility in visibilities" :key="visibility.id"
-                :data-testid="`visibility-selector-item-${visibility.id}`" @select="selectVisibility(visibility)">
+            <DropdownMenuItem v-for="visibilityOption in availableVisibilities" :key="visibilityOption.id"
+                :data-testid="`visibility-selector-item-${visibilityOption.id}`" @select="selectVisibility(visibilityOption)">
                 <div class="flex flex-col gap-1 items-start">
-                    {{ visibility.label }}
+                    <div class="flex items-center gap-2">
+                        <Icon :icon="visibilityOption.icon" />
+                        {{ visibilityOption.label }}
+                    </div>
                     <div class="text-xs text-muted-foreground">
-                        {{ visibility.description }}
+                        {{ visibilityOption.description }}
                     </div>
                 </div>
-                <Icon v-if="visibility.id === selectedVisibilityType" class="ml-auto" icon="lucide:check" />
+                <Icon icon="lucide:check-circle" v-if="visibilityOption.id === visibility" class="ml-auto" />
             </DropdownMenuItem>
         </DropdownMenuContent>
     </DropdownMenu>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
     DropdownMenu,
@@ -31,30 +33,40 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Icon, IconifyIcon } from '@iconify/vue'
+import { Icon } from '@iconify/vue'
+import { computed } from 'vue'
+import { Visibility } from '@/types/enum'
+import { useVisibility } from '@/composables/useVisibility'
 
-interface Props {
-    chatId: string
-    selectedVisibilityType: 'private' | 'public'
-}
-
-const props = defineProps<Props>()
-
-const visibilities: {
-    id: 'private' | 'public'
+interface VisibilityOption {
+    id: Visibility
     label: string
     description: string
-    icon: IconifyIcon | string
-}[] = [
-        { id: 'private' as const, label: 'Private', description: 'Only you can access this chat', icon: 'lucide:lock' },
-        { id: 'public' as const, label: 'Public', description: 'Anyone with the link can access this chat', icon: 'lucide:globe' }
-    ]
+    icon: string
+}
+
+const { visibility, setVisibility } = useVisibility()
+
+const availableVisibilities: VisibilityOption[] = [
+    {
+        id: Visibility.PRIVATE,
+        label: 'Private',
+        description: 'Only you can access this chat',
+        icon: 'lucide:lock'
+    },
+    {
+        id: Visibility.PUBLIC,
+        label: 'Public',
+        description: 'Anyone with the link can access this chat',
+        icon: 'lucide:globe'
+    }
+]
 
 const selectedVisibility = computed(() =>
-    visibilities.find(visibility => visibility.id === props.selectedVisibilityType)
+    availableVisibilities.find(v => v.id === visibility.value) || availableVisibilities[0]
 )
 
-const selectVisibility = (visibility: any) => {
-    console.log('Selected visibility:', visibility.id)
+const selectVisibility = (visibilityOption: VisibilityOption) => {
+    setVisibility(visibilityOption.id)
 }
 </script>

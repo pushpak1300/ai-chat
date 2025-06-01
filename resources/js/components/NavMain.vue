@@ -28,6 +28,9 @@ const page = usePage<SharedData>()
 
 <template>
     <SidebarGroup class="px-2 py-0" v-if="chatHistory?.data?.length > 0">
+        <SidebarGroupLabel>
+            Chat History
+        </SidebarGroupLabel>
         <SidebarMenu>
             <SidebarMenuItem v-for="historyItem in chatHistory.data" :key="historyItem.id">
                 <SidebarMenuButton as-child :is-active="route('chats.show', historyItem.id) === page.url"
@@ -41,7 +44,7 @@ const page = usePage<SharedData>()
         <WhenVisible :params="{
             preserveUrl: true,
             data: {
-                page: chatHistory.current_page + 1,
+                page: chatHistory?.current_page + 1,
             },
             only: ['chatHistory'],
         }" :always="chatHistory.next_page_url !== null">

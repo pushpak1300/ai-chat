@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useStream } from '@laravel/stream-vue'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Head } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
 import { BreadcrumbItemType, Chat, ChatHistory, Message } from '@/types'
 import ChatContainer from '@/components/chat/ChatContainer.vue'
 import { Role, Visibility } from '@/types/enum'
+import { provideVisibility } from '@/composables/useVisibility'
+import { useStorage } from '@vueuse/core'
 
 const props = defineProps<{
     chatHistory: ChatHistory
@@ -20,11 +22,29 @@ const breadcrumbs: BreadcrumbItemType[] = [
 ]
 
 const initialVisibilityType = ref<Visibility>(props.chat?.visibility || Visibility.PRIVATE)
-const initialChatModel = ref('gemini-2.0-flash-lite')
+const selectedModel = useStorage('selected-model', { id: 'gemini-2.0-flash-lite' })
 const messages = ref<Array<Message>>([...props.chat?.messages || []])
 const input = ref('')
 const attachments = ref<Array<string>>([])
 const votes = ref<Array<Record<string, any>>>([])
+
+const { visibility } = provideVisibility(props.chat?.visibility || Visibility.PRIVATE, initialVisibilityType)
+
+const updateChatVisibility = (newVisibility: Visibility) => {
+  router.patch(route('chats.update', { chat: props.chat.id }), {
+    visibility: newVisibility
+  }, {
+    preserveState: true,
+    preserveScroll: true,
+    only: []
+  })
+}
+
+watch(visibility, (newVisibility, oldVisibility) => {
+  if (oldVisibility !== undefined && newVisibility !== oldVisibility) {
+    updateChatVisibility(newVisibility)
+  }
+}, { immediate: false })
 
 const { isFetching, isStreaming, send, cancel, id } = useStream(`stream/${props.chat.id}`, {
   onData: (chunk: string) => {
@@ -64,7 +84,7 @@ onMounted(() => {
 
     send({
       message: props.chat.title,
-      model: initialChatModel.value,
+      model: selectedModel.value.id,
       visibility: initialVisibilityType.value
     })
   }
@@ -97,7 +117,7 @@ const handleSubmit = async () => {
 
     send({
       message: userMessage,
-      model: initialChatModel.value,
+      model: selectedModel.value.id,
       visibility: initialVisibilityType.value
     })
   }
@@ -124,7 +144,6 @@ const pageTitle = computed(() => {
         :stream-id="id"
         :attachments="attachments"
         :votes="votes"
-        :initial-visibility-type="initialVisibilityType"
         :is-readonly="false"
         @set-input="setInput"
         @set-messages="setMessages"

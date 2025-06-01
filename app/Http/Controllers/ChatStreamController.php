@@ -36,7 +36,7 @@ final class ChatStreamController extends Controller
             'model' => $model,
         ]);
         $messages = $chat->messages()->orderBy('created_at')->get();
-        $messages->map(fn(Message $message): \Prism\Prism\ValueObjects\Messages\UserMessage|\Prism\Prism\ValueObjects\Messages\AssistantMessage => match ($message->role) {
+        $messages->map(fn (Message $message): UserMessage|AssistantMessage => match ($message->role) {
             'user' => new UserMessage(content: $message->parts),
             'assistant' => new AssistantMessage(content: $message->parts),
         });

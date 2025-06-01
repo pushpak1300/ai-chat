@@ -1,86 +1,108 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Chat;
 use Inertia\Inertia;
-use Prism\Prism\Prism;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\StoreChatRequest;
+use App\Http\Requests\UpdateChatRequest;
+use Illuminate\Pagination\LengthAwarePaginator;
 
-class ChatController extends Controller
+final class ChatController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
+        /** @var LengthAwarePaginator<Chat> $chats */
+        $chats = Auth::user()->chats()->orderBy('updated_at', 'desc')->paginate(25);
+
         return Inertia::render('Chat/Index', [
-            'title' => 'Chat with AI'
+            'chatHistory' => Inertia::deepMerge($chats),
         ]);
     }
 
-    public function stream(Request $request)
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(StoreChatRequest $request)
     {
-        $request->validate([
-            'message' => 'required|string|max:4000',
+        $chat = Auth::user()->chats()->create([
+            'title' => $request->validated()['message'],
+            'visibility' => $request->validated()['visibility'],
         ]);
 
-        $message = $request->input('message');
+        return redirect()->route('chats.show', ['chat' => $chat]);
+    }
 
-        return new StreamedResponse(function () use ($message) {
-            // Set headers for streaming
-            header('Cache-Control: no-cache');
-            header('Content-Type: text/event-stream');
-            header('Connection: keep-alive');
+    /**
+     * Display the specified resource.
+     */
+    public function show(Chat $chat)
+    {
+        abort_if($chat->user_id !== Auth::id() && $chat->visibility !== 'public', 403);
 
-            try {
-                // Configure Prism with OpenAI (you can change this to any provider)
-                $prism = Prism::text()
-                    ->using('openai', 'gpt-4')
-                    ->withMaxTokens(1000)
-                    ->withTemperature(0.7);
+        $chat->load('messages');
 
-                // Get streaming response
-                $stream = $prism->stream($message);
+        /** @var LengthAwarePaginator<Chat> $chats */
+        $chats = Auth::user()->chats()->orderBy('updated_at', 'desc')->paginate(25);
 
-                foreach ($stream as $chunk) {
-                    $content = $chunk->text ?? '';
+        return Inertia::render('Chat/Show', [
+            'chat' => $chat,
+            'chatHistory' => Inertia::deepMerge($chats),
+        ]);
+    }
 
-                    // Send server-sent event format
-                    echo "data: " . json_encode([
-                        'type' => 'chunk',
-                        'content' => $content
-                    ]) . "\n\n";
+    public function update(Chat $chat, UpdateChatRequest $request)
+    {
+        if ($request->has('message_id')) {
+            $message = $chat->messages()->find($request->string('message_id'));
 
-                    // Flush the output
-                    if (ob_get_level()) {
-                        ob_flush();
-                    }
-                    flush();
-                }
-
-                // Send completion event
-                echo "data: " . json_encode([
-                    'type' => 'complete'
-                ]) . "\n\n";
-
-                if (ob_get_level()) {
-                    ob_flush();
-                }
-                flush();
-
-            } catch (\Exception $e) {
-                echo "data: " . json_encode([
-                    'type' => 'error',
-                    'message' => $e->getMessage()
-                ]) . "\n\n";
-
-                if (ob_get_level()) {
-                    ob_flush();
-                }
-                flush();
+            if (!$message) {
+                return;
             }
-        }, 200, [
-            'Cache-Control' => 'no-cache',
-            'Content-Type' => 'text/event-stream',
-            'Connection' => 'keep-alive',
-        ]);
+
+            if ($request->has('is_upvoted')) {
+                $message->update(['is_upvoted' => $request->boolean('is_upvoted')]);
+            }
+
+            if ($request->has('message')) {
+                $chat->messages()
+                    ->where('created_at', '>', $message->created_at)
+                    ->delete();
+
+                $message->update(['message' => $request->string('message')]);
+            }
+        }
+
+        $updates = [];
+
+        if ($request->has('title')) {
+            $updates['title'] = $request->string('title');
+        }
+
+        if ($request->has('visibility')) {
+            $updates['visibility'] = $request->string('visibility');
+        }
+
+        if (!empty($updates)) {
+            $chat->update($updates);
+        }
+
+        return redirect()->route('chats.show', ['chat' => $chat]);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Chat $chat)
+    {
+        $chat->delete();
+
+        return redirect()->route('chats.index');
     }
 }

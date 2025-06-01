@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/app/AppSidebarLayout.vue';
-import type { BreadcrumbItemType } from '@/types';
+import type { BreadcrumbItemType, ChatHistory } from '@/types';
 
 interface Props {
     breadcrumbs?: BreadcrumbItemType[];
+    chatHistory?: ChatHistory;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -12,7 +13,7 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="breadcrumbs">
+    <AppLayout :breadcrumbs="breadcrumbs" :chat-history="chatHistory">
         <slot />
     </AppLayout>
 </template>

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'prism_server' => [
         // The middleware that will be applied to the Prism Server routes.

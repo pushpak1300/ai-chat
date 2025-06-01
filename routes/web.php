@@ -1,20 +1,21 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+declare(strict_types=1);
+
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\ChatStreamController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-// Chat routes
-Route::get('/chat', [ChatController::class, 'index'])->name('chat');
-Route::post('/chat/stream', [ChatController::class, 'stream'])->name('chat.stream');
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Chat routes
+    Route::resource('/chat', ChatController::class)->except(['create', 'edit'])->names('chats');
+    Route::post('/chat/stream/{chat}', ChatStreamController::class)->name('chats.stream');
+});
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

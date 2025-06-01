@@ -1,30 +1,58 @@
 <script setup lang="ts">
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavItem, type SharedData } from '@/types';
+import { ChatHistory , type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
+import { WhenVisible } from '@inertiajs/vue3';
 
-defineProps<{
-    items: NavItem[];
-}>();
-
-const page = usePage<SharedData>();
+withDefaults(defineProps<{
+    chatHistory: ChatHistory;
+}>(), {
+    'chatHistory': () => ({
+        data: [],
+        current_page: 1,
+        next_page_url: null,
+        path: '',
+        per_page: 25,
+        from: 0,
+        to: 0,
+        total: 0,
+        first_page_url: '',
+        last_page: 1,
+        last_page_url: '',
+        prev_page_url: null,
+        links: []
+    })
+});
+const page = usePage<SharedData>()
 </script>
 
 <template>
-    <SidebarGroup class="px-2 py-0">
-        <SidebarGroupLabel>Platform</SidebarGroupLabel>
+    <SidebarGroup class="px-2 py-0" v-if="chatHistory?.data?.length > 0">
         <SidebarMenu>
-            <SidebarMenuItem v-for="item in items" :key="item.title">
-                <SidebarMenuButton 
-                    as-child :is-active="item.href === page.url"
-                    :tooltip="item.title"
-                >
-                    <Link :href="item.href">
-                        <component :is="item.icon" />
-                        <span>{{ item.title }}</span>
+            <SidebarMenuItem v-for="historyItem in chatHistory.data" :key="historyItem.id">
+                <SidebarMenuButton as-child :is-active="route('chats.show', historyItem.id) === page.url"
+                    :tooltip="historyItem.title">
+                    <Link :href="route('chats.show', historyItem.id)">
+                    <span>{{ historyItem.title }}</span>
                     </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
         </SidebarMenu>
+        <WhenVisible :params="{
+            preserveUrl: true,
+            data: {
+                page: chatHistory.current_page + 1,
+            },
+            only: ['chatHistory'],
+        }" :always="chatHistory.next_page_url !== null">
+            <template #fallback>
+                <SidebarGroupLabel class="mt-2">
+                    <div>Loading...</div>
+                </SidebarGroupLabel>
+            </template>
+        </WhenVisible>
+        <SidebarGroupLabel class="mt-2">
+            You have reached the end of your chat history.
+        </SidebarGroupLabel>
     </SidebarGroup>
 </template>

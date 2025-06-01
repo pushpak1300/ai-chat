@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
+use App\Models\Chat;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Chat>
+ * @extends Factory<Chat>
  */
-class ChatFactory extends Factory
+final class ChatFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -17,7 +21,9 @@ class ChatFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'user_id' => User::factory(),
+            'title' => $this->faker->sentence(3),
+            'visibility' => $this->faker->randomElement(['public', 'private']),
         ];
     }
 }

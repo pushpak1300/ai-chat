@@ -2,29 +2,26 @@
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { MessageSquare } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
+import { Icon } from '@iconify/vue';
+import { ChatHistory } from '@/types';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Chat',
-        href: '/chat',
-        icon: MessageSquare,
-    },
-];
-
+defineProps<{
+    chatHistory?: ChatHistory;
+    chatNextPage?: number | null;
+}>()
 </script>
 
 <template>
-    <Sidebar collapsible="icon" variant="inset">
+    <Sidebar collapsible="offcanvas" variant="sidebar">
         <SidebarHeader>
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="route('dashboard')">
-                            <AppLogo />
+                        <Link :href="route('chats.index')">
+                        <AppLogo />
+                        <Icon icon="lucide:plus" />
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -32,7 +29,7 @@ const mainNavItems: NavItem[] = [
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :items="mainNavItems" />
+            <NavMain :chat-history="chatHistory" :chat-next-page="chatNextPage" />
         </SidebarContent>
 
         <SidebarFooter>

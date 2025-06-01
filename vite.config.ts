@@ -4,6 +4,8 @@ import path from 'path';
 import tailwindcss from "@tailwindcss/vite";
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
+import Components from 'unplugin-vue-components/vite'
+import MotionResolver from 'motion-v/resolver'
 
 export default defineConfig({
     plugins: [
@@ -20,6 +22,12 @@ export default defineConfig({
                     includeAbsolute: false,
                 },
             },
+        }),
+        Components({
+            dts: true,
+            resolvers: [
+                MotionResolver()
+            ],
         }),
     ],
     resolve: {

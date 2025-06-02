@@ -44,11 +44,7 @@ final class Chat extends Model
 
     use HasUuids;
 
-    protected $fillable = [
-        'user_id',
-        'title',
-        'visibility',
-    ];
+    protected $guarded = [];
 
     public function messages(): HasMany
     {

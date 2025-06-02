@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-2 w-full">
     <Textarea
       ref="textareaRef"
-      v-model="editedContent"
+      v-model="message"
       class="min-h-[100px] resize-none"
       placeholder="Edit your message..."
       @keydown="handleKeyDown"
@@ -18,7 +18,7 @@
       </Button>
       <Button
         size="sm"
-        :disabled="!editedContent.trim()"
+        :disabled="!message.trim()"
         @click="handleSave"
       >
         Save
@@ -33,20 +33,18 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { type Message } from '@/types'
 
-interface Props {
-  message: Message
-}
-
-const props = defineProps<Props>()
+const props = defineProps<{
+    message: Message
+}>()
 
 const emit = defineEmits<{
   setMode: [mode: 'view' | 'edit']
-  setMessages: [messages: Array<Message>]
-  reload: []
+  setMessage: [message: Message]
 }>()
 
-const textareaRef = ref<HTMLTextAreaElement>()
-const editedContent = ref(props.message.parts || '')
+const textareaRef = ref<InstanceType<typeof Textarea>>()
+
+const message = ref(props.message.parts || '')
 
 const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === 'Escape') {
@@ -57,24 +55,21 @@ const handleKeyDown = (event: KeyboardEvent) => {
 }
 
 const handleCancel = () => {
-  editedContent.value = props.message.parts || ''
   emit('setMode', 'view')
 }
 
 const handleSave = () => {
-  if (editedContent.value.trim()) {
-    const updatedMessage = {
+  if (message.value.trim()) {
+    emit('setMessage', {
       ...props.message,
-      parts: editedContent.value.trim()
-    }
-
+      parts: message.value.trim()
+    })
     emit('setMode', 'view')
-    console.log('Message updated:', updatedMessage)
   }
 }
 
 onMounted(() => {
-  textareaRef.value?.focus()
-  textareaRef.value?.select()
+  textareaRef.value?.$el?.focus()
+  textareaRef.value?.$el?.select()
 })
 </script>

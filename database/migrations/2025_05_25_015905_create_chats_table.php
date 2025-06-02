@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Visiblity;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -17,7 +18,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignId('user_id')->constrained('users');
             $table->string('title');
-            $table->enum('visibility', ['public', 'private'])->default('private');
+            $table->enum('visibility', Visiblity::toArray())->default(Visiblity::PRIVATE);
             $table->timestamps();
         });
     }

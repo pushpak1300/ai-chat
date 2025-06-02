@@ -33,9 +33,9 @@ const page = usePage<SharedData>()
         </SidebarGroupLabel>
         <SidebarMenu>
             <SidebarMenuItem v-for="historyItem in chatHistory.data" :key="historyItem.id">
-                <SidebarMenuButton as-child :is-active="route('chats.show', historyItem.id) === page.url"
+                <SidebarMenuButton as-child :class="{ 'bg-secondary text-secondary-foreground': route('chats.show', historyItem.id, false) === page.url }"
                     :tooltip="historyItem.title">
-                    <Link :href="route('chats.show', historyItem.id)">
+                    <Link prefetch :href="route('chats.show', historyItem.id)">
                     <span>{{ historyItem.title }}</span>
                     </Link>
                 </SidebarMenuButton>

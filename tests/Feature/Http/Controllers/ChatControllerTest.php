@@ -2,8 +2,295 @@
 
 declare(strict_types=1);
 
-test('example', function (): void {
-    $response = $this->get('/');
+use App\Models\Chat;
+use App\Models\User;
+use App\Models\Message;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-    $response->assertStatus(200);
+uses(RefreshDatabase::class);
+
+describe('ChatController', function (): void {
+    beforeEach(function (): void {
+        $this->user = User::factory()->create();
+        $this->actingAs($this->user);
+    });
+
+    describe('index', function (): void {
+        it('displays paginated chats ordered by updated_at desc', function (): void {
+            $olderChat = Chat::factory()->for($this->user)->create(['updated_at' => now()->subDay()]);
+            $newerChat = Chat::factory()->for($this->user)->create(['updated_at' => now()]);
+
+            $response = $this->get(route('chats.index'));
+
+            $response->assertOk()
+                ->assertInertia(
+                    fn ($page) => $page
+                        ->component('Chat/Index')
+                        ->has('chatHistory.data', 2)
+                        ->where('chatHistory.data.0.id', $newerChat->id)
+                        ->where('chatHistory.data.1.id', $olderChat->id)
+                );
+        });
+
+        it("only shows user's own chats", function (): void {
+            $otherUser = User::factory()->create();
+            Chat::factory()->for($otherUser)->create();
+            $userChat = Chat::factory()->for($this->user)->create();
+
+            $response = $this->get(route('chats.index'));
+
+            $response->assertOk()
+                ->assertInertia(
+                    fn ($page) => $page
+                        ->has('chatHistory.data', 1)
+                        ->where('chatHistory.data.0.id', $userChat->id)
+                );
+        });
+
+        it('paginates results with 25 per page', function (): void {
+            Chat::factory()->for($this->user)->count(30)->create();
+
+            $response = $this->get(route('chats.index'));
+
+            $response->assertOk()
+                ->assertInertia(
+                    fn ($page) => $page
+                        ->has('chatHistory.data', 25)
+                        ->where('chatHistory.per_page', 25)
+                );
+        });
+
+        it('requires authentication', function (): void {
+            $this->post(route('logout'));
+
+            $response = $this->get(route('chats.index'));
+
+            $response->assertRedirect(route('login'));
+        });
+    });
+
+    describe('store', function (): void {
+        it('creates a new chat and redirects to show page', function (): void {
+            $data = [
+                'message' => 'Test chat message',
+                'visibility' => 'private',
+                'model' => 'gemini-2.0-flash',
+            ];
+
+            $response = $this->post(route('chats.store'), $data);
+
+            $chat = Chat::query()->where('user_id', $this->user->id)->first();
+
+            expect($chat)->not->toBeNull()
+                ->and($chat->title)->toBe('Test chat message')
+                ->and($chat->visibility)->toBe('private')
+                ->and($chat->user_id)->toBe($this->user->id);
+
+            $response->assertRedirect(route('chats.show', $chat));
+        });
+
+        it('validates required fields', function (): void {
+            $response = $this->post(route('chats.store'), []);
+
+            $response->assertSessionHasErrors(['message', 'visibility', 'model']);
+        });
+
+        it('validates visibility enum values', function (): void {
+            $data = [
+                'message' => 'Test message',
+                'visibility' => 'invalid',
+                'model' => 'gemini-2.0-flash',
+            ];
+
+            $response = $this->post(route('chats.store'), $data);
+
+            $response->assertSessionHasErrors('visibility');
+        });
+
+        it('validates model enum values', function (): void {
+            $data = [
+                'message' => 'Test message',
+                'visibility' => 'private',
+                'model' => 'invalid-model',
+            ];
+
+            $response = $this->post(route('chats.store'), $data);
+
+            $response->assertSessionHasErrors('model');
+        });
+    });
+
+    describe('show', function (): void {
+        it('displays chat with messages and chat history', function (): void {
+            $chat = Chat::factory()->for($this->user)->create();
+            $message = Message::factory()->for($chat)->create([
+                'role' => 'user',
+                'parts' => 'Test message content',
+                'attachments' => [],
+            ]);
+
+            $response = $this->get(route('chats.show', $chat));
+
+            $response->assertOk()
+                ->assertInertia(
+                    fn ($page) => $page
+                        ->component('Chat/Show')
+                        ->where('chat.id', $chat->id)
+                        ->has('chat.messages', 1)
+                        ->where('chat.messages.0.id', $message->id)
+                        ->has('chatHistory.data')
+                );
+        });
+
+        it('allows access to own private chats', function (): void {
+            $chat = Chat::factory()->for($this->user)->create(['visibility' => 'private']);
+
+            $response = $this->get(route('chats.show', $chat));
+
+            $response->assertOk();
+        });
+
+        it('allows access to public chats from other users', function (): void {
+            $otherUser = User::factory()->create();
+            $chat = Chat::factory()->for($otherUser)->create(['visibility' => 'public']);
+
+            $response = $this->get(route('chats.show', $chat));
+
+            $response->assertOk();
+        });
+
+        it('denies access to private chats from other users', function (): void {
+            $otherUser = User::factory()->create();
+            $chat = Chat::factory()->for($otherUser)->create(['visibility' => 'private']);
+
+            $response = $this->get(route('chats.show', $chat));
+
+            $response->assertForbidden();
+        });
+    });
+
+    describe('update', function (): void {
+        beforeEach(function (): void {
+            $this->chat = Chat::factory()->for($this->user)->create();
+        });
+
+        it('updates chat title', function (): void {
+            $data = ['title' => 'Updated Title'];
+
+            $response = $this->patch(route('chats.update', $this->chat), $data);
+
+            $this->chat->refresh();
+            expect($this->chat->title)->toBe('Updated Title');
+            $response->assertRedirect(route('chats.show', $this->chat));
+        });
+
+        it('updates chat visibility', function (): void {
+            $data = ['visibility' => 'public'];
+
+            $response = $this->patch(route('chats.update', $this->chat), $data);
+
+            $this->chat->refresh();
+            expect($this->chat->visibility)->toBe('public');
+            $response->assertRedirect(route('chats.show', $this->chat));
+        });
+
+        it('updates message upvote status', function (): void {
+            $message = Message::factory()->for($this->chat)->create([
+                'role' => 'user',
+                'parts' => 'Test message',
+                'attachments' => [],
+                'is_upvoted' => true,
+            ]);
+
+            $data = [
+                'message_id' => $message->id,
+                'is_upvoted' => true,
+            ];
+
+            $response = $this->patch(route('chats.update', $this->chat), $data);
+
+            $message->refresh();
+            expect($message->is_upvoted)->toBeTrue();
+            $response->assertRedirect(route('chats.show', $this->chat));
+        });
+
+        it('updates message content and deletes subsequent messages', function (): void {
+            $message1 = Message::factory()->for($this->chat)->create([
+                'role' => 'user',
+                'parts' => 'Original message',
+                'attachments' => [],
+                'created_at' => now()->subMinute(),
+            ]);
+            $message2 = Message::factory()->for($this->chat)->create([
+                'role' => 'assistant',
+                'parts' => 'Response message',
+                'attachments' => [],
+                'created_at' => now(),
+            ]);
+
+            $data = [
+                'message_id' => $message1->id,
+                'message' => 'Updated message content',
+            ];
+
+            $response = $this->patch(route('chats.update', $this->chat), $data);
+
+            expect(Message::query()->find($message1->id))->toBeNull();
+            expect(Message::query()->find($message2->id))->toBeNull();
+
+            $response->assertRedirect(route('chats.show', $this->chat));
+        });
+
+        it('validates message_id exists', function (): void {
+            $data = [
+                'message_id' => 'non-existent-id',
+                'is_upvoted' => true,
+            ];
+
+            $response = $this->patch(route('chats.update', $this->chat), $data);
+
+            $response->assertSessionHasErrors('message_id');
+        });
+
+        it('validates title length', function (): void {
+            $data = ['title' => str_repeat('a', 256)];
+
+            $response = $this->patch(route('chats.update', $this->chat), $data);
+
+            $response->assertSessionHasErrors('title');
+        });
+
+        it('validates visibility enum', function (): void {
+            $data = ['visibility' => 'invalid'];
+
+            $response = $this->patch(route('chats.update', $this->chat), $data);
+
+            $response->assertSessionHasErrors('visibility');
+        });
+    });
+
+    describe('destroy', function (): void {
+        it('deletes chat and redirects to index', function (): void {
+            $chat = Chat::factory()->for($this->user)->create();
+
+            $response = $this->delete(route('chats.destroy', $chat));
+
+            expect(Chat::query()->find($chat->id))->toBeNull();
+            $response->assertRedirect(route('chats.index'));
+        });
+
+        it('deletes associated messages when chat is deleted', function (): void {
+            $chat = Chat::factory()->for($this->user)->create();
+            $message = Message::factory()->for($chat)->create([
+                'role' => 'user',
+                'parts' => 'Test message',
+                'attachments' => [],
+            ]);
+
+            $this->delete(route('chats.destroy', $chat));
+
+            expect(Chat::query()->find($chat->id))->toBeNull()
+                ->and(Message::query()->find($message->id))->toBeNull();
+        });
+    });
 });

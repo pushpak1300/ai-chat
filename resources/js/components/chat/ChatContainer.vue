@@ -8,7 +8,7 @@
         :votes="votes"
         :messages="messages"
         :is-readonly="isReadonly"
-        @set-messages="$emit('setMessages', $event)"
+        @set-message="$emit('setMessage', $event)"
         @update-is-at-bottom="isAtBottom = $event"
       />
     </div>
@@ -23,7 +23,6 @@
         :is-at-bottom="isAtBottom"
         @set-input="$emit('setInput', $event)"
         @set-attachments="$emit('setAttachments', $event)"
-        @set-messages="$emit('setMessages', $event)"
         @append="$emit('append', $event)"
         @stop="$emit('stop')"
         @handle-submit="$emit('handleSubmit')"
@@ -66,7 +65,7 @@ const handleScrollToBottom = () => {
 
 defineEmits<{
   setInput: [value: string]
-  setMessages: [messages: Array<Message>]
+  setMessage: [message: Message]
   setAttachments: [attachments: Array<string>]
   append: [message: string]
   stop: []

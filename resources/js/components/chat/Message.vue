@@ -79,8 +79,7 @@
               :key="message.id"
               :message="message"
               @set-mode="mode = $event"
-              @set-messages="emit('setMessages', $event)"
-              @reload="emit('reload')"
+              @set-message="emit('setMessage', $event)"
             />
           </div>
 
@@ -88,7 +87,7 @@
             v-if="!isLoading"
             :key="`action-${message.id}`"
             :message="message"
-            :vote="vote"
+            :chat-id="chatId"
             :is-loading="isLoading"
           />
         </div>
@@ -111,15 +110,14 @@ import { AnimatePresence, motion } from 'motion-v'
 
 defineProps<{
     message: Message
-    vote?: any
     isLoading: boolean
     requiresScrollPadding: boolean
     isReadonly?: boolean
+    chatId?: string
 }>()
 
 const emit = defineEmits<{
-  setMessages: [messages: Array<Message>]
-  reload: []
+  setMessage: [message: Message]
 }>()
 
 const mode = ref<'view' | 'edit'>('view')

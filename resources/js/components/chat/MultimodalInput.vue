@@ -30,7 +30,7 @@
         </div>
 
         <div class="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
-            <StopButton v-if="isStreaming" @stop="$emit('stop')" @set-messages="$emit('setMessages', $event)" />
+            <StopButton v-if="isStreaming" @stop="$emit('stop')" />
             <SendButton v-else :input="input" :upload-queue="uploadQueue" :is-processing="isStreaming"
                 @submit="submitForm" />
         </div>
@@ -63,7 +63,6 @@ const props = defineProps<{
 const emit = defineEmits<{
     setInput: [value: string]
     setAttachments: [attachments: Array<string>]
-    setMessages: [messages: Array<Message>]
     append: [message: string]
     stop: []
     handleSubmit: []

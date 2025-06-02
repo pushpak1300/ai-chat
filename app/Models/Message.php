@@ -44,16 +44,12 @@ final class Message extends Model
 
     use HasUuids;
 
-    protected $fillable = [
-        'chat_id',
-        'role',
-        'parts',
-        'attachments',
-    ];
+    protected $guarded = [];
 
     protected $casts = [
         'parts' => 'string',
         'attachments' => 'array',
+        'is_upvoted' => 'boolean',
     ];
 
     public function chat(): BelongsTo

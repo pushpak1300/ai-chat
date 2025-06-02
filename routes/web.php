@@ -14,7 +14,7 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     // Chat routes
     Route::resource('/chat', ChatController::class)->except(['create', 'edit'])->names('chats');
-    Route::post('/chat/stream/{chat}', ChatStreamController::class)->name('chats.stream');
+    Route::post('/chat/stream/{chat}', ChatStreamController::class)->name('chat.stream');
 });
 
 require __DIR__.'/settings.php';

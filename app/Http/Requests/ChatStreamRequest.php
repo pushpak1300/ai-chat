@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Enums\Visiblity;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-final class StoreChatRequest extends FormRequest
+final class ChatStreamRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -29,8 +27,7 @@ final class StoreChatRequest extends FormRequest
     {
         return [
             'message' => 'required|string|max:255',
-            'model' => 'required|string|in:gemini-2.0-flash-lite,gemini-2.0-flash',
-            'visibility' => ['required', 'string', Rule::enum(Visiblity::class)],
+            'model' => 'nullable|string',
         ];
     }
 }

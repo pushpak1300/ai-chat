@@ -8,9 +8,9 @@ use Generator;
 use App\Models\Chat;
 use Prism\Prism\Prism;
 use App\Models\Message;
+use App\Enums\ModelName;
 use Illuminate\Http\Request;
 use Prism\Prism\Enums\Provider;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Prism\Prism\ValueObjects\Messages\UserMessage;
 use Prism\Prism\ValueObjects\Messages\AssistantMessage;
@@ -19,22 +19,9 @@ final class ChatStreamController extends Controller
 {
     public function __invoke(Request $request, Chat $chat)
     {
-        Log::info('Stream started');
+        $userMessage = $request->string('message')->trim()->value();
+        $model = $request->string('model', ModelName::GEMINI_2_0_FLASH_LITE->value)->trim()->value();
 
-        $request->validate([
-            'message' => 'required|string',
-            'model' => 'nullable|string',
-            'visibility' => 'nullable|string',
-        ]);
-
-        $userMessage = $request->input('message');
-        $model = $request->input('model', 'gemini-2.0-flash');
-
-        Log::info('Processing message', [
-            'message' => $userMessage,
-            'chat_id' => $chat->id,
-            'model' => $model,
-        ]);
         $messages = $chat->messages()->orderBy('created_at')->get();
         $messages->map(fn (Message $message): UserMessage|AssistantMessage => match ($message->role) {
             'user' => new UserMessage(content: $message->parts),
@@ -66,8 +53,6 @@ final class ChatStreamController extends Controller
             ]);
 
             $chat->touch();
-
-            Log::info('Stream completed', ['final_response' => $finalResponse]);
         });
     }
 }

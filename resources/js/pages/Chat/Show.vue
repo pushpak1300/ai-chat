@@ -67,26 +67,49 @@ const { isFetching, isStreaming, send, cancel, id } = useStream(`stream/${props.
         parts: 'Sorry, there was an error processing your request. Please try again.',
       })
     })
+  },
+  onFinish: () => {
+    router.reload({ only: ['chat', 'chatHistory'] })
   }
 })
 
+const sendInitialMessage = (messageContent: string) => {
+  messages.value.push({
+    role: Role.USER,
+    parts: messageContent,
+  })
+
+  messages.value.push({
+    role: Role.ASSISTANT,
+    parts: '',
+  })
+
+  send({
+    message: messageContent,
+    model: selectedModel.value.id,
+    visibility: initialVisibilityType.value,
+  })
+}
+
 onMounted(() => {
-  if (props.chat.title && messages.value.length === 0) {
+  if (messages.value.length === 0 && props.chat.title) {
+    sendInitialMessage(props.chat.title)
+  } else if (messages.value.length > 0) {
+    const lastMessage = messages.value[messages.value.length - 1]
+
+    if (lastMessage.role === Role.USER) {
       messages.value.push({
-          role: Role.USER,
-          parts: props.chat.title,
+        role: Role.ASSISTANT,
+        parts: '',
       })
 
-    messages.value.push({
-      role: Role.ASSISTANT,
-      parts: '',
-    })
-
-    send({
-      message: props.chat.title,
-      model: selectedModel.value.id,
-      visibility: initialVisibilityType.value
-    })
+      send({
+        message: lastMessage.parts,
+        model: selectedModel.value.id,
+        visibility: initialVisibilityType.value,
+        intialMessage: false
+      })
+    }
   }
 })
 
@@ -94,8 +117,17 @@ const setInput = (value: string) => {
   input.value = value
 }
 
-const setMessages = (newMessages: Array<Message>) => {
-  messages.value = newMessages
+const setMessage = async (message: Message) => {
+router.patch(route('chats.update', { chat: props.chat.id }), {
+    message_id: message.id,
+    message: message.parts,
+  }, {
+    only: ['chat', 'chatHistory'],
+    async: true,
+    onSuccess: () => {
+        messages.value.splice(messages.value.length - 1, 1, message)
+    }
+  })
 }
 
 const setAttachments = (newAttachments: Array<string>) => {
@@ -118,10 +150,12 @@ const handleSubmit = async () => {
     send({
       message: userMessage,
       model: selectedModel.value.id,
-      visibility: initialVisibilityType.value
+      visibility: initialVisibilityType.value,
     })
   }
 }
+
+
 
 const stop = () => {
   cancel()
@@ -146,7 +180,7 @@ const pageTitle = computed(() => {
         :votes="votes"
         :is-readonly="false"
         @set-input="setInput"
-        @set-messages="setMessages"
+        @set-message="setMessage"
         @set-attachments="setAttachments"
         @stop="stop"
         @handle-submit="handleSubmit"

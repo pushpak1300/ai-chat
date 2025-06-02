@@ -13,11 +13,11 @@
           v-for="(message, index) in messages"
           :key="message.id"
           :message="message"
+          :chat-id="chatId"
           :is-loading="isStreaming && messages.length - 1 === index"
-          :vote="votes?.find((vote) => vote.messageId === message.id)"
           :is-readonly="isReadonly"
           :requires-scroll-padding="hasSentMessage && index === messages.length - 1"
-          @set-messages="$emit('setMessages', $event)"
+          @set-message="$emit('setMessage', $event)"
         />
 
         <ThinkingMessage
@@ -47,11 +47,11 @@ const props = defineProps<{
     streamId?: string
     votes?: Array<Record<string, any>>
     messages: Array<MessageType>
-    isReadonly: boolean
+    isReadonly: boolean,
 }>()
 
 const emit = defineEmits<{
-  setMessages: [messages: Array<MessageType>]
+  setMessage: [message: MessageType]
   updateIsAtBottom: [isAtBottom: boolean]
 }>()
 
@@ -85,7 +85,7 @@ watch(() => props.messages[props.messages.length - 1]?.parts, () => {
     }
     scrollTimeout = setTimeout(() => {
       scrollToBottomInstant()
-    }, 100) // Debounce scroll updates
+    }, 100)
   }
 }, { flush: 'post' })
 

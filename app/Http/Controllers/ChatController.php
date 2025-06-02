@@ -9,6 +9,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoreChatRequest;
 use App\Http\Requests\UpdateChatRequest;
+use App\Models\Message;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 final class ChatController extends Controller
@@ -36,7 +37,7 @@ final class ChatController extends Controller
             'visibility' => $request->validated()['visibility'],
         ]);
 
-        return redirect()->route('chats.show', ['chat' => $chat]);
+        return to_route('chats.show', ['chat' => $chat]);
     }
 
     /**
@@ -46,54 +47,53 @@ final class ChatController extends Controller
     {
         abort_if($chat->user_id !== Auth::id() && $chat->visibility !== 'public', 403);
 
-        $chat->load('messages');
-
         /** @var LengthAwarePaginator<Chat> $chats */
         $chats = Auth::user()->chats()->orderBy('updated_at', 'desc')->paginate(25);
 
         return Inertia::render('Chat/Show', [
-            'chat' => $chat,
-            'chatHistory' => Inertia::deepMerge($chats),
+            'chat' => fn () => $chat->load('messages'),
+            'chatHistory' => fn () => Inertia::deepMerge($chats),
         ]);
     }
 
     public function update(Chat $chat, UpdateChatRequest $request)
     {
         if ($request->filled('message_id')) {
-            $message = $chat->messages()->find($request->string('message_id'));
+            $messageId = $request->get('message_id');
+
+            $message = $chat->messages()->find($messageId);
 
             if (! $message) {
                 return null;
             }
 
-            if ($request->filled('is_upvoted')) {
-                $message->update(['is_upvoted' => $request->boolean('is_upvoted')]);
+            if ($request->has('is_upvoted')) {
+                $upvoteValue = $request->boolean('is_upvoted');
+                $message->update(['is_upvoted' => $upvoteValue]);
             }
 
             if ($request->filled('message')) {
                 $chat->messages()
-                    ->where('created_at', '>', $message->created_at)
+                    ->where('id', '>=', $message->id)
                     ->delete();
-
-                $message->update(['message' => $request->string('message')]);
             }
         }
 
         $updates = [];
 
         if ($request->filled('title')) {
-            $updates['title'] = $request->string('title');
+            $updates['title'] = $request->get('title');
         }
 
         if ($request->filled('visibility')) {
-            $updates['visibility'] = $request->string('visibility');
+            $updates['visibility'] = $request->get('visibility');
         }
 
         if ($updates !== []) {
             $chat->update($updates);
         }
 
-        return redirect()->route('chats.show', ['chat' => $chat]);
+        return to_route('chats.show', ['chat' => $chat]);
     }
 
     /**
@@ -101,8 +101,9 @@ final class ChatController extends Controller
      */
     public function destroy(Chat $chat)
     {
+        $chat->messages()->delete();
         $chat->delete();
 
-        return redirect()->route('chats.index');
+        return to_route('chats.index');
     }
 }

@@ -71,6 +71,7 @@ export interface Message {
     role: Role;
     parts?: string;
     attachments?: Array<string>;
+    is_upvoted?: boolean;
     created_at?: string;
     updated_at?: string;
 }

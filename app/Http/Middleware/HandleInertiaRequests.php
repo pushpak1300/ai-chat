@@ -42,7 +42,6 @@ final class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            'chatHistory' => Auth::check() ? Inertia::defer(fn () => Auth::user()->chats()->orderBy('updated_at', 'desc')->paginate($request->integer('perPage', 25)))->deepMerge() : [],
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user(),

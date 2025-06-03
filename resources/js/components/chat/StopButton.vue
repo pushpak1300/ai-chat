@@ -1,3 +1,19 @@
+<script setup lang="ts">
+import type { Message } from '@/types'
+import { Icon } from '@iconify/vue'
+import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+
+const emit = defineEmits<{
+  stop: []
+  setMessages: [messages: Array<Message>]
+}>()
+
+function handleStop() {
+  emit('stop')
+}
+</script>
+
 <template>
   <Tooltip>
     <TooltipTrigger as-child>
@@ -13,19 +29,3 @@
     <TooltipContent>Stop generating</TooltipContent>
   </Tooltip>
 </template>
-
-<script setup lang="ts">
-import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Icon } from '@iconify/vue'
-import { type Message } from '@/types'
-
-const emit = defineEmits<{
-  stop: []
-  setMessages: [messages: Array<Message>]
-}>()
-
-const handleStop = () => {
-  emit('stop')
-}
-</script>

@@ -1,10 +1,6 @@
-<template>
-  <div v-if="props.content" class="prose dark:prose-invert max-w-none min-w-0 overflow-hidden break-words" v-html="renderedContent" />
-</template>
-
 <script setup lang="ts">
-import { computed } from 'vue'
 import { marked } from 'marked'
+import { computed } from 'vue'
 
 interface Props {
   content?: string
@@ -19,7 +15,7 @@ const renderedContent = computed(() => {
 
   const html = marked(props.content, {
     gfm: true,
-    breaks: true
+    breaks: true,
   }) as string
 
   return html
@@ -39,5 +35,9 @@ const renderedContent = computed(() => {
     .replace(/<h5([^>]*)>/g, '<h5 class="text-base font-semibold mt-6 mb-2 break-words"$1>')
     .replace(/<h6([^>]*)>/g, '<h6 class="text-sm font-semibold mt-6 mb-2 break-words"$1>')
     .replace(/<p([^>]*)>/g, '<p class="break-words"$1>')
-});
+})
 </script>
+
+<template>
+  <div v-if="props.content" class="prose dark:prose-invert max-w-none min-w-0 overflow-hidden break-words" v-html="renderedContent" />
+</template>

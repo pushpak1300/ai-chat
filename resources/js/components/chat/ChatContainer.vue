@@ -1,3 +1,43 @@
+<script setup lang="ts">
+import type { Message } from '@/types/index'
+import { ref } from 'vue'
+import Messages from '@/components/chat/Messages.vue'
+import MultimodalInput from '@/components/chat/MultimodalInput.vue'
+
+withDefaults(defineProps<{
+  messages?: Array<Message>
+  input?: string
+  streamId?: string
+  attachments?: Array<string>
+  votes?: Array<Record<string, any>>
+  isReadonly?: boolean
+  chatId?: string
+}>(), {
+  messages: () => [],
+  input: '',
+  streamId: '',
+  attachments: () => [],
+  votes: () => [],
+  isReadonly: false,
+  chatId: '',
+})
+
+defineEmits<{
+  setInput: [value: string]
+  setMessage: [message: Message]
+  setAttachments: [attachments: Array<string>]
+  append: [message: string]
+  stop: []
+  handleSubmit: []
+}>()
+const isAtBottom = ref(false)
+const messagesRef = ref<InstanceType<typeof Messages>>()
+
+function handleScrollToBottom() {
+  messagesRef.value?.scrollToBottom()
+}
+</script>
+
 <template>
   <div class="flex flex-col h-full bg-background overflow-hidden">
     <div class="flex-1 min-h-0 overflow-hidden">
@@ -31,44 +71,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import Messages from '@/components/chat/Messages.vue'
-import MultimodalInput from '@/components/chat/MultimodalInput.vue'
-import { type Message } from '@/types/index';
-
-withDefaults(defineProps<{
-    messages?: Array<Message>
-    input: string
-    streamId?: string
-    attachments?: Array<string>
-    votes?: Array<Record<string, any>>
-    isReadonly?: boolean
-    chatId?: string
-}>(), {
-    messages: () => [],
-    input: '',
-    streamId: '',
-    attachments: () => [],
-    votes: () => [],
-    isReadonly: false,
-    chatId: '',
-})
-
-const isAtBottom = ref(false)
-const messagesRef = ref<InstanceType<typeof Messages>>()
-
-const handleScrollToBottom = () => {
-    messagesRef.value?.scrollToBottom()
-}
-
-defineEmits<{
-  setInput: [value: string]
-  setMessage: [message: Message]
-  setAttachments: [attachments: Array<string>]
-  append: [message: string]
-  stop: []
-  handleSubmit: []
-}>()
-</script>

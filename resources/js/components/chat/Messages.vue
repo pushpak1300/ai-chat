@@ -1,50 +1,18 @@
-<template>
-  <div
-    ref="containerRef"
-    class="flex flex-col h-full overflow-y-auto overflow-x-hidden pt-4 relative"
-  >
-    <div v-if="messages.length === 0" class="flex-1 flex items-center justify-center">
-      <Greeting />
-    </div>
-
-    <template v-else>
-      <div class="flex flex-col gap-6 min-w-0 px-4">
-        <Message
-          v-for="(message, index) in messages"
-          :key="message.id"
-          :message="message"
-          :chat-id="chatId"
-          :is-loading="isStreaming && messages.length - 1 === index"
-          :is-readonly="isReadonly"
-          :requires-scroll-padding="hasSentMessage && index === messages.length - 1"
-          @set-message="$emit('setMessage', $event)"
-        />
-
-        <ThinkingMessage
-          v-if="isFetching"
-        />
-      </div>
-    </template>
-
-
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, watch, onMounted, nextTick } from 'vue'
+import type { Message as MessageType } from '@/types'
 import { useStream } from '@laravel/stream-vue'
+import { nextTick, onMounted, ref, watch } from 'vue'
+import Greeting from '@/components/chat/Greeting.vue'
 import Message from '@/components/chat/Message.vue'
 import ThinkingMessage from '@/components/chat/ThinkingMessage.vue'
-import Greeting from '@/components/chat/Greeting.vue'
 import { useScrollToBottom } from '@/composables/useScrollToBottom'
-import { type Message as MessageType } from '@/types';
 
 const props = defineProps<{
-    chatId?: string
-    streamId?: string
-    votes?: Array<Record<string, any>>
-    messages: Array<MessageType>
-    isReadonly: boolean,
+  chatId?: string
+  streamId?: string
+  votes?: Array<Record<string, any>>
+  messages: Array<MessageType>
+  isReadonly: boolean
 }>()
 
 const emit = defineEmits<{
@@ -98,6 +66,36 @@ onMounted(() => {
 })
 
 defineExpose({
-  scrollToBottom: scrollToBottomInstant
+  scrollToBottom: scrollToBottomInstant,
 })
 </script>
+
+<template>
+  <div
+    ref="containerRef"
+    class="flex flex-col h-full overflow-y-auto overflow-x-hidden pt-4 relative"
+  >
+    <div v-if="messages.length === 0" class="flex-1 flex items-center justify-center">
+      <Greeting />
+    </div>
+
+    <template v-else>
+      <div class="flex flex-col gap-6 min-w-0 px-4">
+        <Message
+          v-for="(message, index) in messages"
+          :key="message.id"
+          :message="message"
+          :chat-id="chatId"
+          :is-loading="isStreaming && messages.length - 1 === index"
+          :is-readonly="isReadonly"
+          :requires-scroll-padding="hasSentMessage && index === messages.length - 1"
+          @set-message="$emit('setMessage', $event)"
+        />
+
+        <ThinkingMessage
+          v-if="isFetching"
+        />
+      </div>
+    </template>
+  </div>
+</template>

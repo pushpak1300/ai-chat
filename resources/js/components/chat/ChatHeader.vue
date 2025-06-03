@@ -1,3 +1,34 @@
+<script setup lang="ts">
+import type { Visibility } from '@/types/enum'
+import { Icon } from '@iconify/vue'
+import { useWindowSize } from '@vueuse/core'
+import ModelSelector from '@/components/chat/ModelSelector.vue'
+import SidebarToggle from '@/components/chat/SidebarToggle.vue'
+import VisibilitySelector from '@/components/chat/VisibilitySelector.vue'
+import { Button } from '@/components/ui/button'
+import { useSidebar } from '@/components/ui/sidebar'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { provideVisibility } from '@/composables/useVisibility'
+
+interface Props {
+  chatId: string
+  selectedModelId: string
+  selectedVisibilityType: Visibility
+  isReadonly: boolean
+}
+
+const props = defineProps<Props>()
+
+provideVisibility(props.selectedVisibilityType)
+
+const { open } = useSidebar()
+const { width: windowWidth } = useWindowSize()
+
+function handleNewChat() {
+  window.location.href = '/'
+}
+</script>
+
 <template>
   <header class="flex sticky top-0 bg-background py-1.5 items-center px-2 md:px-2 gap-2">
     <SidebarToggle />
@@ -42,34 +73,3 @@
     </Button>
   </header>
 </template>
-
-<script setup lang="ts">
-import { useWindowSize } from '@vueuse/core'
-import { useSidebar } from '@/components/ui/sidebar'
-import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import SidebarToggle from '@/components/chat/SidebarToggle.vue'
-import ModelSelector from '@/components/chat/ModelSelector.vue'
-import VisibilitySelector from '@/components/chat/VisibilitySelector.vue'
-import { Icon } from '@iconify/vue'
-import { provideVisibility } from '@/composables/useVisibility'
-import { Visibility } from '@/types/enum'
-
-interface Props {
-  chatId: string
-  selectedModelId: string
-  selectedVisibilityType: Visibility
-  isReadonly: boolean
-}
-
-const props = defineProps<Props>()
-
-provideVisibility(props.selectedVisibilityType)
-
-const { open } = useSidebar()
-const { width: windowWidth } = useWindowSize()
-
-const handleNewChat = () => {
-  window.location.href = '/'
-}
-</script>

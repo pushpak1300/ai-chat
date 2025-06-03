@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import AppLayout from '@/layouts/AppLayout.vue'
+import type { BreadcrumbItemType, ChatHistory } from '@/types'
 import { Head, router } from '@inertiajs/vue3'
-import { type BreadcrumbItemType, type ChatHistory } from '@/types'
-import ChatContainer from '@/components/chat/ChatContainer.vue'
-import { Visibility } from '@/types/enum'
-import { provideVisibility } from '@/composables/useVisibility'
 import { useStorage } from '@vueuse/core'
+import { ref } from 'vue'
+import ChatContainer from '@/components/chat/ChatContainer.vue'
+import { provideVisibility } from '@/composables/useVisibility'
+import AppLayout from '@/layouts/AppLayout.vue'
+import { Visibility } from '@/types/enum'
 
 defineProps<{
-    chatHistory: ChatHistory
+  chatHistory: ChatHistory
 }>()
 
 const breadcrumbs: BreadcrumbItemType[] = [
-    {
-        title: 'Chat',
-        href: route('chats.index'),
-    },
+  {
+    title: 'Chat',
+    href: route('chats.index'),
+  },
 ]
 
 const input = ref('')
@@ -26,42 +26,43 @@ const selectedModel = useStorage('selected-model')
 
 provideVisibility(Visibility.PRIVATE, initialVisibilityType)
 
-const setInput = (value: string) => {
-    input.value = value
+function setInput(value: string) {
+  input.value = value
 }
 
-const setAttachments = (newAttachments: Array<string>) => {
-    attachments.value = newAttachments
+function setAttachments(newAttachments: Array<string>) {
+  attachments.value = newAttachments
 }
 
-const sendInitialMessage = (message: string) => {
-    router.post(route('chats.store'), {
-        message,
-        model: selectedModel.value.id,
-        visibility: initialVisibilityType.value,
-    })
+function sendInitialMessage(message: string) {
+  router.post(route('chats.store'), {
+    message,
+    model: selectedModel.value.id,
+    visibility: initialVisibilityType.value,
+  })
 }
 
-const handleSubmit = () => {
-    const trimmedInput = input.value.trim()
-    if (trimmedInput) {
-        sendInitialMessage(trimmedInput)
-    }
+function handleSubmit() {
+  const trimmedInput = input.value.trim()
+  if (trimmedInput) {
+    sendInitialMessage(trimmedInput)
+  }
 }
 
-const append = (message: string) => {
-    sendInitialMessage(message)
+function append(message: string) {
+  sendInitialMessage(message)
 }
 </script>
 
 <template>
-    <Head title="Chat" />
-    <AppLayout :breadcrumbs="breadcrumbs" :chat-history="chatHistory">
-        <div class="h-[calc(100vh-4rem)] bg-background">
-            <ChatContainer
-                :input="input" @set-input="setInput"
-                @set-attachments="setAttachments" @handle-submit="handleSubmit"
-                @append="append" />
-        </div>
-    </AppLayout>
+  <Head title="Chat" />
+  <AppLayout :breadcrumbs="breadcrumbs" :chat-history="chatHistory">
+    <div class="h-[calc(100vh-4rem)] bg-background">
+      <ChatContainer
+        :input="input" @set-input="setInput"
+        @set-attachments="setAttachments" @handle-submit="handleSubmit"
+        @append="append"
+      />
+    </div>
+  </AppLayout>
 </template>

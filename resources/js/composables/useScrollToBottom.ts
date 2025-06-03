@@ -1,26 +1,28 @@
-import { ref, computed } from 'vue'
 import { useScroll } from '@vueuse/core'
+import { computed, ref } from 'vue'
 
 export function useScrollToBottom() {
   const containerRef = ref<HTMLElement>()
 
   const { y, arrivedState, measure } = useScroll(containerRef, {
-    behavior: 'auto'
+    behavior: 'auto',
   })
 
   const isAtBottom = computed(() => arrivedState.bottom)
 
   const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
-    if (!containerRef.value) return
+    if (!containerRef.value)
+      return
 
     const maxScrollTop = containerRef.value.scrollHeight - containerRef.value.clientHeight
 
     if (behavior === 'auto') {
       y.value = maxScrollTop
-    } else {
+    }
+    else {
       containerRef.value.scrollTo({
         top: maxScrollTop,
-        behavior
+        behavior,
       })
     }
   }
@@ -39,6 +41,6 @@ export function useScrollToBottom() {
     scrollToBottom,
     scrollToBottomInstant,
     scrollToBottomSmooth,
-    measure
+    measure,
   }
 }

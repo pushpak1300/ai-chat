@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, watch, ref } from 'vue'
-import { Link, usePage } from '@inertiajs/vue3'
-import { WhenVisible } from '@inertiajs/vue3'
+import type { ChatHistory, HistoryItem, SharedData } from '@/types'
+import { Link, usePage, WhenVisible } from '@inertiajs/vue3'
 import { useLocalStorage } from '@vueuse/core'
+import { computed, watch } from 'vue'
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -10,10 +10,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
-import type { ChatHistory, SharedData, HistoryItem } from '@/types'
 
 interface Props {
-  chatHistory: ChatHistory
+  chatHistory?: ChatHistory
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -30,8 +29,8 @@ const props = withDefaults(defineProps<Props>(), {
     last_page: 1,
     last_page_url: '',
     prev_page_url: null,
-    links: []
-  })
+    links: [],
+  }),
 })
 
 const page = usePage<SharedData>()
@@ -40,21 +39,19 @@ const allChatHistory = useLocalStorage<HistoryItem[]>('chat-history', [])
 const lastLoadedPage = useLocalStorage<number>('chat-last-page', 0)
 const maxLoadedPage = useLocalStorage<number>('chat-max-page', 0)
 
-
-
 const hasMorePages = computed(() => props.chatHistory.next_page_url !== null)
 const hasHistoryItems = computed(() => allChatHistory.value.length > 0)
 const nextPageNumber = computed(() => maxLoadedPage.value + 1)
 
-const isCurrentChat = (chatId: string | number): boolean => {
+function isCurrentChat(chatId: string | number): boolean {
   return route('chats.show', chatId, false) === page.url
 }
 
-const handleChatLinkClick = () => {
+function handleChatLinkClick() {
   // Store scroll position when clicking chat links
 }
 
-const handleChatHistoryUpdate = (newChatHistory: ChatHistory) => {
+function handleChatHistoryUpdate(newChatHistory: ChatHistory) {
   if (allChatHistory.value.length === 0) {
     allChatHistory.value = [...newChatHistory.data]
     lastLoadedPage.value = newChatHistory.current_page
@@ -64,7 +61,7 @@ const handleChatHistoryUpdate = (newChatHistory: ChatHistory) => {
 
   if (newChatHistory.current_page > maxLoadedPage.value) {
     const newItems = newChatHistory.data.filter(
-      item => !allChatHistory.value.some(existing => existing.id === item.id)
+      item => !allChatHistory.value.some(existing => existing.id === item.id),
     )
     allChatHistory.value.push(...newItems)
     maxLoadedPage.value = newChatHistory.current_page
@@ -73,18 +70,13 @@ const handleChatHistoryUpdate = (newChatHistory: ChatHistory) => {
   lastLoadedPage.value = newChatHistory.current_page
 }
 
-watch(() => props.chatHistory,
-  handleChatHistoryUpdate,
-  { deep: true, immediate: true }
+watch(() => props.chatHistory, handleChatHistoryUpdate, { deep: true, immediate: true },
 )
-
-
 </script>
 
 <template>
   <SidebarGroup
     v-if="hasHistoryItems"
-    ref="sidebarGroupRef"
     class="px-2 py-0"
     role="navigation"
     aria-label="Chat History Navigation"
@@ -101,7 +93,7 @@ watch(() => props.chatHistory,
         <SidebarMenuButton
           as-child
           :class="{
-            'bg-secondary text-secondary-foreground': isCurrentChat(historyItem.id)
+            'bg-secondary text-secondary-foreground': isCurrentChat(historyItem.id),
           }"
           :tooltip="historyItem.title"
         >
@@ -125,7 +117,7 @@ watch(() => props.chatHistory,
       :params="{
         preserveUrl: true,
         data: { page: nextPageNumber },
-        only: ['chatHistory']
+        only: ['chatHistory'],
       }"
       :always="hasMorePages"
     >

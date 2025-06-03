@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
-import { useStream } from '@laravel/stream-vue'
-import AppLayout from '@/layouts/AppLayout.vue'
+import type { BreadcrumbItemType, Chat, ChatHistory, Message } from '@/types'
 import { Head, router } from '@inertiajs/vue3'
-import { BreadcrumbItemType, Chat, ChatHistory, Message } from '@/types'
-import ChatContainer from '@/components/chat/ChatContainer.vue'
-import { Role, Visibility } from '@/types/enum'
-import { provideVisibility } from '@/composables/useVisibility'
+import { useStream } from '@laravel/stream-vue'
 import { useStorage } from '@vueuse/core'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import ChatContainer from '@/components/chat/ChatContainer.vue'
+import { provideVisibility } from '@/composables/useVisibility'
+import AppLayout from '@/layouts/AppLayout.vue'
+import { Role, Visibility } from '@/types/enum'
 
 const props = defineProps<{
-    chatHistory: ChatHistory
-    chat: Chat,
+  chatHistory: ChatHistory
+  chat: Chat
 }>()
 
 const breadcrumbs: BreadcrumbItemType[] = [
@@ -30,13 +30,13 @@ const votes = ref<Array<Record<string, any>>>([])
 
 const { visibility } = provideVisibility(props.chat?.visibility || Visibility.PRIVATE, initialVisibilityType)
 
-const updateChatVisibility = (newVisibility: Visibility) => {
+function updateChatVisibility(newVisibility: Visibility) {
   router.patch(route('chats.update', { chat: props.chat.id }), {
-    visibility: newVisibility
+    visibility: newVisibility,
   }, {
     preserveState: true,
     preserveScroll: true,
-    only: []
+    only: [],
   })
 }
 
@@ -55,7 +55,8 @@ const { isFetching, isStreaming, send, cancel, id } = useStream(`stream/${props.
         role: Role.ASSISTANT,
         parts: chunk,
       })
-    } else {
+    }
+    else {
       lastMessage.parts += chunk
     }
   },
@@ -69,11 +70,11 @@ const { isFetching, isStreaming, send, cancel, id } = useStream(`stream/${props.
     })
   },
   onFinish: () => {
-    router.reload();
-  }
+    router.reload()
+  },
 })
 
-const sendInitialMessage = (messageContent: string) => {
+function sendInitialMessage(messageContent: string) {
   messages.value.push({
     role: Role.USER,
     parts: messageContent,
@@ -94,7 +95,8 @@ const sendInitialMessage = (messageContent: string) => {
 onMounted(() => {
   if (messages.value.length === 0 && props.chat.title) {
     sendInitialMessage(props.chat.title)
-  } else if (messages.value.length > 0) {
+  }
+  else if (messages.value.length > 0) {
     const lastMessage = messages.value[messages.value.length - 1]
 
     if (lastMessage.role === Role.USER) {
@@ -107,33 +109,33 @@ onMounted(() => {
         message: lastMessage.parts,
         model: selectedModel.value.id,
         visibility: initialVisibilityType.value,
-        intialMessage: false
+        intialMessage: false,
       })
     }
   }
 })
 
-const setInput = (value: string) => {
+function setInput(value: string) {
   input.value = value
 }
 
-const setMessage = async (message: Message) => {
-router.patch(route('chats.update', { chat: props.chat.id }), {
+async function setMessage(message: Message) {
+  router.patch(route('chats.update', { chat: props.chat.id }), {
     message_id: message.id,
     message: message.parts,
   }, {
     async: true,
     onSuccess: () => {
-        messages.value.splice(messages.value.length - 1, 1, message)
-    }
+      messages.value.splice(messages.value.length - 1, 1, message)
+    },
   })
 }
 
-const setAttachments = (newAttachments: Array<string>) => {
+function setAttachments(newAttachments: Array<string>) {
   attachments.value = newAttachments
 }
 
-const handleSubmit = async () => {
+async function handleSubmit() {
   if (input.value.trim() && !isFetching.value && !isStreaming.value && props.chat.id) {
     const userMessage = input.value.trim()
     input.value = ''
@@ -154,16 +156,13 @@ const handleSubmit = async () => {
   }
 }
 
-
-
-const stop = () => {
+function stop() {
   cancel()
 }
 
 const pageTitle = computed(() => {
   return props.chat?.title || 'Chat'
 })
-
 </script>
 
 <template>

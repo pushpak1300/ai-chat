@@ -1,5 +1,32 @@
+<script setup lang="ts">
+import type { Message } from '@/types'
+import { Icon } from '@iconify/vue'
+import { AnimatePresence, motion } from 'motion-v'
+import { ref } from 'vue'
+import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Role } from '@/types/enum'
+import MarkdownRenderer from './MarkdownRenderer.vue'
+import MessageActions from './MessageActions.vue'
+import MessageEditor from './MessageEditor.vue'
+
+defineProps<{
+  message: Message
+  isLoading: boolean
+  requiresScrollPadding: boolean
+  isReadonly?: boolean
+  chatId?: string
+}>()
+
+const emit = defineEmits<{
+  setMessage: [message: Message]
+}>()
+
+const mode = ref<'view' | 'edit'>('view')
+</script>
+
 <template>
-   <AnimatePresence>
+  <AnimatePresence>
     <motion.div
       :key="message.id"
       :data-testid="`message-${message.role}`"
@@ -9,12 +36,11 @@
       :data-role="message.role"
     >
       <div
-        :class="[
-          'flex flex-col md:flex-row gap-2 md:gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl',
+        class="flex flex-col md:flex-row gap-2 md:gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl" :class="[
           {
             'w-full': mode === 'edit',
-            'group-data-[role=user]/message:w-fit': mode !== 'edit'
-          }
+            'group-data-[role=user]/message:w-fit': mode !== 'edit',
+          },
         ]"
       >
         <div
@@ -27,19 +53,17 @@
         </div>
 
         <div
-          :class="[
-            'flex flex-col gap-2 md:gap-4 w-full',
+          class="flex flex-col gap-2 md:gap-4 w-full" :class="[
             {
-              'min-h-96': message.role === 'assistant' && requiresScrollPadding
-            }
+              'min-h-96': message.role === 'assistant' && requiresScrollPadding,
+            },
           ]"
         >
           <div
             v-if="message.attachments && message.attachments.length > 0"
             data-testid="message-attachments"
             class="flex flex-row justify-end gap-2"
-          >
-          </div>
+          />
           <div class="flex flex-row gap-2 items-start">
             <Tooltip v-if="message.role === 'user' && !isLoading">
               <TooltipTrigger as-child>
@@ -58,11 +82,10 @@
             <div
               v-if="mode === 'view'"
               data-testid="message-content"
-              :class="[
-                'flex flex-col gap-4 min-w-0 overflow-hidden',
+              class="flex flex-col gap-4 min-w-0 overflow-hidden" :class="[
                 {
-                  'bg-primary text-primary-foreground px-3 py-2 rounded-xl': message.role === 'user'
-                }
+                  'bg-primary text-primary-foreground px-3 py-2 rounded-xl': message.role === 'user',
+                },
               ]"
             >
               <div v-if="message.parts" class="w-full">
@@ -95,30 +118,3 @@
     </motion.div>
   </AnimatePresence>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import MessageActions from './MessageActions.vue'
-import MessageEditor from './MessageEditor.vue'
-import MarkdownRenderer from './MarkdownRenderer.vue'
-import { Icon } from '@iconify/vue'
-import { type Message } from '@/types'
-import { Role } from '@/types/enum'
-import { AnimatePresence, motion } from 'motion-v'
-
-defineProps<{
-    message: Message
-    isLoading: boolean
-    requiresScrollPadding: boolean
-    isReadonly?: boolean
-    chatId?: string
-}>()
-
-const emit = defineEmits<{
-  setMessage: [message: Message]
-}>()
-
-const mode = ref<'view' | 'edit'>('view')
-</script>

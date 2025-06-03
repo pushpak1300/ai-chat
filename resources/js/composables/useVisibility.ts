@@ -1,4 +1,5 @@
-import { type InjectionKey, type Ref, provide, inject, ref, readonly, watch } from 'vue'
+import type { InjectionKey, Ref } from 'vue'
+import { inject, provide, readonly, ref, watch } from 'vue'
 import { Visibility } from '@/types/enum'
 
 interface VisibilityState {
@@ -26,7 +27,7 @@ export function provideVisibility(initialVisibility: Visibility = Visibility.PRI
 
   const state: VisibilityState = {
     visibility: readonly(visibility),
-    setVisibility
+    setVisibility,
   }
 
   provide(VisibilityKey, state)

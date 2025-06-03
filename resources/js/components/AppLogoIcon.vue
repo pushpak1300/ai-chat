@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import type { HTMLAttributes } from 'vue';
-import { Icon } from "@iconify/vue";
+import type { HTMLAttributes } from 'vue'
+import { Icon } from '@iconify/vue'
 
 defineOptions({
-    inheritAttrs: false,
-});
+  inheritAttrs: false,
+})
+
+defineProps<Props>()
 
 interface Props {
-    className?: HTMLAttributes['class'];
+  className?: HTMLAttributes['class']
 }
-
-defineProps<Props>();
 </script>
 
 <template>
-    <Icon icon="lucide:message-circle" class="size-5" />
+  <Icon icon="lucide:message-circle" class="size-5" />
 </template>

@@ -1,3 +1,51 @@
+<script setup lang="ts">
+import type { Message } from '@/types'
+import { onMounted, ref } from 'vue'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+
+const props = defineProps<{
+  message: Message
+}>()
+
+const emit = defineEmits<{
+  setMode: [mode: 'view' | 'edit']
+  setMessage: [message: Message]
+}>()
+
+const textareaRef = ref<InstanceType<typeof Textarea>>()
+
+const message = ref(props.message.parts || '')
+
+function handleKeyDown(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    handleCancel()
+  }
+  else if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+    handleSave()
+  }
+}
+
+function handleCancel() {
+  emit('setMode', 'view')
+}
+
+function handleSave() {
+  if (message.value.trim()) {
+    emit('setMessage', {
+      ...props.message,
+      parts: message.value.trim(),
+    })
+    emit('setMode', 'view')
+  }
+}
+
+onMounted(() => {
+  textareaRef.value?.$el?.focus()
+  textareaRef.value?.$el?.select()
+})
+</script>
+
 <template>
   <div class="flex flex-col gap-2 w-full">
     <Textarea
@@ -26,50 +74,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { type Message } from '@/types'
-
-const props = defineProps<{
-    message: Message
-}>()
-
-const emit = defineEmits<{
-  setMode: [mode: 'view' | 'edit']
-  setMessage: [message: Message]
-}>()
-
-const textareaRef = ref<InstanceType<typeof Textarea>>()
-
-const message = ref(props.message.parts || '')
-
-const handleKeyDown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape') {
-    handleCancel()
-  } else if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
-    handleSave()
-  }
-}
-
-const handleCancel = () => {
-  emit('setMode', 'view')
-}
-
-const handleSave = () => {
-  if (message.value.trim()) {
-    emit('setMessage', {
-      ...props.message,
-      parts: message.value.trim()
-    })
-    emit('setMode', 'view')
-  }
-}
-
-onMounted(() => {
-  textareaRef.value?.$el?.focus()
-  textareaRef.value?.$el?.select()
-})
-</script>

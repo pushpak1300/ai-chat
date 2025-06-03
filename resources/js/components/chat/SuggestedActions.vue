@@ -1,3 +1,38 @@
+<script setup lang="ts">
+import { Button } from '@/components/ui/button'
+
+const emit = defineEmits<{
+  append: [message: any]
+}>()
+
+const suggestedActions = [
+  {
+    title: 'How do I create',
+    label: 'a new Laravel project?',
+    action: 'How do I create a new Laravel project from scratch?',
+  },
+  {
+    title: 'Help me debug',
+    label: 'my database connection',
+    action: 'Help me debug database connection issues in Laravel',
+  },
+  {
+    title: 'Explain the concept',
+    label: 'of dependency injection',
+    action: 'Explain the concept of dependency injection and how it works in Laravel',
+  },
+  {
+    title: 'Show me how to',
+    label: 'write clean code',
+    action: 'Show me best practices for writing clean, maintainable code',
+  },
+]
+
+function handleActionClick(suggestedAction: any) {
+  emit('append', suggestedAction.action)
+}
+</script>
+
 <template>
   <div
     data-testid="suggested-actions"
@@ -27,38 +62,3 @@
     </Transition>
   </div>
 </template>
-
-<script setup lang="ts">
-import { Button } from '@/components/ui/button'
-
-const emit = defineEmits<{
-  append: [message: any]
-}>()
-
-const suggestedActions = [
-  {
-    title: 'How do I create',
-    label: 'a new Laravel project?',
-    action: 'How do I create a new Laravel project from scratch?'
-  },
-  {
-    title: 'Help me debug',
-    label: 'my database connection',
-    action: 'Help me debug database connection issues in Laravel'
-  },
-  {
-    title: 'Explain the concept',
-    label: 'of dependency injection',
-    action: 'Explain the concept of dependency injection and how it works in Laravel'
-  },
-  {
-    title: 'Show me how to',
-    label: 'write clean code',
-    action: 'Show me best practices for writing clean, maintainable code'
-  }
-]
-
-const handleActionClick = (suggestedAction: any) => {
-  emit('append', suggestedAction.action)
-}
-</script>

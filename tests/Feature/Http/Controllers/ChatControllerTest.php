@@ -12,6 +12,7 @@ uses(RefreshDatabase::class);
 describe('ChatController', function (): void {
     beforeEach(function (): void {
         $this->user = User::factory()->create();
+        $this->otherUser = User::factory()->create();
         $this->actingAs($this->user);
     });
 
@@ -264,6 +265,93 @@ describe('ChatController', function (): void {
 
             expect(Chat::query()->find($chat->id))->toBeNull()
                 ->and(Message::query()->find($message->id))->toBeNull();
+        });
+    });
+
+    describe('policy integration', function (): void {
+        beforeEach(function (): void {
+            $this->ownedChat = Chat::factory()->for($this->user)->create(['visibility' => 'private']);
+            $this->otherUserPrivateChat = Chat::factory()->for($this->otherUser)->create(['visibility' => 'private']);
+            $this->otherUserPublicChat = Chat::factory()->for($this->otherUser)->create(['visibility' => 'public']);
+        });
+
+        it('allows viewing own chats', function (): void {
+            $response = $this->get(route('chats.show', $this->ownedChat));
+
+            $response->assertOk();
+        });
+
+        it('allows viewing public chats from other users', function (): void {
+            $response = $this->get(route('chats.show', $this->otherUserPublicChat));
+
+            $response->assertOk();
+        });
+
+        it('prevents viewing private chats from other users', function (): void {
+            $response = $this->get(route('chats.show', $this->otherUserPrivateChat));
+
+            $response->assertForbidden();
+        });
+
+        it('allows updating own chats', function (): void {
+            $response = $this->patch(route('chats.update', $this->ownedChat), [
+                'title' => 'Updated Title',
+            ]);
+
+            $response->assertRedirect(route('chats.show', $this->ownedChat));
+
+            $this->ownedChat->refresh();
+            expect($this->ownedChat->title)->toBe('Updated Title');
+        });
+
+        it('prevents updating private chats from other users', function (): void {
+            $originalTitle = $this->otherUserPrivateChat->title;
+
+            $response = $this->patch(route('chats.update', $this->otherUserPrivateChat), [
+                'title' => 'Should Not Update',
+            ]);
+
+            $response->assertForbidden();
+
+            $this->otherUserPrivateChat->refresh();
+            expect($this->otherUserPrivateChat->title)->toBe($originalTitle);
+        });
+
+        it('prevents updating public chats from other users', function (): void {
+            $originalTitle = $this->otherUserPublicChat->title;
+
+            $response = $this->patch(route('chats.update', $this->otherUserPublicChat), [
+                'title' => 'Should Not Update',
+            ]);
+
+            $response->assertForbidden();
+
+            $this->otherUserPublicChat->refresh();
+            expect($this->otherUserPublicChat->title)->toBe($originalTitle);
+        });
+
+        it('allows deleting own chats', function (): void {
+            $response = $this->delete(route('chats.destroy', $this->ownedChat));
+
+            $response->assertRedirect(route('chats.index'));
+
+            expect(Chat::query()->find($this->ownedChat->id))->toBeNull();
+        });
+
+        it('prevents deleting private chats from other users', function (): void {
+            $response = $this->delete(route('chats.destroy', $this->otherUserPrivateChat));
+
+            $response->assertForbidden();
+
+            expect(Chat::query()->find($this->otherUserPrivateChat->id))->not->toBeNull();
+        });
+
+        it('prevents deleting public chats from other users', function (): void {
+            $response = $this->delete(route('chats.destroy', $this->otherUserPublicChat));
+
+            $response->assertForbidden();
+
+            expect(Chat::query()->find($this->otherUserPublicChat->id))->not->toBeNull();
         });
     });
 });

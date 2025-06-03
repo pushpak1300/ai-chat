@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Models\Chat;
 use App\Models\User;
 
 final class ChatPolicy
@@ -13,15 +14,15 @@ final class ChatPolicy
      */
     public function viewAny(): bool
     {
-        return false;
+        return true;
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(): bool
+    public function view(User $user, Chat $chat): bool
     {
-        return false;
+        return $user->id === $chat->user_id || $chat->visibility === 'public';
     }
 
     /**
@@ -29,38 +30,38 @@ final class ChatPolicy
      */
     public function create(): bool
     {
-        return false;
+        return true;
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(): bool
+    public function update(User $user, Chat $chat): bool
     {
-        return false;
+        return $user->id === $chat->user_id;
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(): bool
+    public function delete(User $user, Chat $chat): bool
     {
-        return false;
+        return $user->id === $chat->user_id;
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(): bool
+    public function restore(User $user, Chat $chat): bool
     {
-        return false;
+        return $user->id === $chat->user_id;
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(): bool
+    public function forceDelete(User $user, Chat $chat): bool
     {
-        return false;
+        return $user->id === $chat->user_id;
     }
 }

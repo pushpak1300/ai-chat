@@ -17,7 +17,7 @@ use Prism\Prism\ValueObjects\Messages\AssistantMessage;
 
 final class ChatStreamController extends Controller
 {
-    public function __invoke(Request $request, Chat $chat)
+    public function __invoke(Request $request, Chat $chat): Generator
     {
         $userMessage = $request->string('message')->trim()->value();
         $model = $request->string('model', ModelName::GEMINI_2_0_FLASH_LITE->value)->trim()->value();

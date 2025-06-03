@@ -52,6 +52,11 @@ final class Message extends Model
         'is_upvoted' => 'boolean',
     ];
 
+    /**
+     * Get the user that the OAuth connection belongs to.
+     *
+     * @return BelongsTo<Chat, covariant $this>
+     */
     public function chat(): BelongsTo
     {
         return $this->belongsTo(Chat::class);

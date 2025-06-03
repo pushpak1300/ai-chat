@@ -44,13 +44,24 @@ final class Chat extends Model
 
     use HasUuids;
 
+    /** @var array<non-empty-string> */
     protected $guarded = [];
 
+    /**
+     * Get the user that the OAuth connection belongs to.
+     *
+     * @return HasMany<Message, covariant $this>
+     */
     public function messages(): HasMany
     {
         return $this->hasMany(Message::class);
     }
 
+    /**
+     * Get the user that the OAuth connection belongs to.
+     *
+     * @return BelongsTo<User, covariant $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -55,6 +55,11 @@ final class User extends Authenticatable
         'remember_token',
     ];
 
+    /**
+     * Get the user that the OAuth connection belongs to.
+     *
+     * @return HasMany<Chat, covariant $this>
+     */
     public function chats(): HasMany
     {
         return $this->hasMany(Chat::class);

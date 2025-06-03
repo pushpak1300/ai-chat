@@ -1,68 +1,29 @@
-import { ref, watch, onUnmounted, nextTick } from 'vue'
-
-type ScrollFlag = ScrollBehavior | false
+import { ref, computed } from 'vue'
+import { useScroll } from '@vueuse/core'
 
 export function useScrollToBottom() {
   const containerRef = ref<HTMLElement>()
-  const endRef = ref<HTMLElement>()
-  const isAtBottom = ref(false)
-  const scrollBehavior = ref<ScrollFlag>(false)
 
-  let observer: IntersectionObserver | null = null
+  const { y, arrivedState, measure } = useScroll(containerRef, {
+    behavior: 'auto'
+  })
 
-  const setupObserver = () => {
-    if (endRef.value && !observer) {
-      observer = new IntersectionObserver(
-        (entries) => {
-          const entry = entries[0]
-          if (entry.isIntersecting) {
-            onViewportEnter()
-          } else {
-            onViewportLeave()
-          }
-        },
-        {
-          root: containerRef.value || null,
-          threshold: 0.1
-        }
-      )
-
-      observer.observe(endRef.value)
-    }
-  }
+  const isAtBottom = computed(() => arrivedState.bottom)
 
   const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
-    scrollBehavior.value = behavior
-  }
+    if (!containerRef.value) return
 
-  const onViewportEnter = () => {
-    isAtBottom.value = true
-  }
+    const maxScrollTop = containerRef.value.scrollHeight - containerRef.value.clientHeight
 
-  const onViewportLeave = () => {
-    isAtBottom.value = false
-  }
-
-  watch(scrollBehavior, (newBehavior) => {
-    if (newBehavior && endRef.value) {
-      endRef.value.scrollIntoView({ behavior: newBehavior })
-      scrollBehavior.value = false
-    }
-  })
-
-  watch(endRef, () => {
-    if (endRef.value) {
-      nextTick(() => {
-        setupObserver()
+    if (behavior === 'auto') {
+      y.value = maxScrollTop
+    } else {
+      containerRef.value.scrollTo({
+        top: maxScrollTop,
+        behavior
       })
     }
-  })
-
-  onUnmounted(() => {
-    if (observer) {
-      observer.disconnect()
-    }
-  })
+  }
 
   const scrollToBottomInstant = () => {
     scrollToBottom('auto')
@@ -74,12 +35,10 @@ export function useScrollToBottom() {
 
   return {
     containerRef,
-    endRef,
     isAtBottom,
     scrollToBottom,
     scrollToBottomInstant,
     scrollToBottomSmooth,
-    onViewportEnter,
-    onViewportLeave
+    measure
   }
 }

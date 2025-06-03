@@ -3,6 +3,7 @@ import type { Message } from '@/types'
 import { Icon } from '@iconify/vue'
 import { useForm } from '@inertiajs/vue3'
 import { useClipboard } from '@vueuse/core'
+import { computed } from 'vue'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -21,75 +22,81 @@ const form = useForm({
   is_upvoted: props.message.is_upvoted,
 })
 
-function upvoteMessage() {
-  form.is_upvoted = true
-  form.patch(route('chats.update', { chat: props.chatId }), {
-    onSuccess: () => {
-      form.is_upvoted = true
-      toast.success('Response upvoted!')
-    },
-    onError: () => {
-      form.is_upvoted = props.message.is_upvoted
-      toast.error('Failed to upvote', {
-        description: 'Please try again',
-      })
-    },
+const shouldShowActions = computed(() => !props.isLoading && props.message.role === Role.ASSISTANT)
+
+const isUpvoted = computed(() => form.is_upvoted === true)
+const isDownvoted = computed(() => form.is_upvoted === false)
+
+function voteMessage(isUpvote: boolean) {
+  const action = isUpvote ? 'upvote' : 'downvote'
+  const previousState = form.is_upvoted
+
+  form.is_upvoted = isUpvote
+
+  const promise = new Promise((resolve, reject) => {
+    form.patch(route('chats.update', { chat: props.chatId }), {
+      async: true,
+      onSuccess: () => resolve({ action }),
+      onError: () => {
+        form.is_upvoted = previousState
+        reject(new Error(`Failed to ${action}`))
+      },
+    })
+  })
+
+  toast.promise(promise, {
+    loading: `${action === 'upvote' ? 'Upvoting' : 'Downvoting'} response...`,
+    success: `Response ${action}d!`,
+    error: `Failed to ${action}. Please try again`,
   })
 }
 
-function downvoteMessage() {
-  form.is_upvoted = false
-  form.patch(route('chats.update', { chat: props.chatId }), {
-    onSuccess: () => {
-      form.is_upvoted = false
-      toast.success('Response downvoted!')
-    },
-    onError: () => {
-      form.is_upvoted = props.message.is_upvoted
-      toast.error('Failed to downvote')
-    },
-  })
-}
+const upvoteMessage = () => voteMessage(true)
+const downvoteMessage = () => voteMessage(false)
+
+const actionButtons = computed(() => [
+  {
+    icon: copied.value ? 'lucide:check' : 'lucide:copy',
+    tooltip: copied.value ? 'Copied!' : 'Copy',
+    onClick: () => copy(props.message.parts || ''),
+    class: 'text-muted-foreground',
+    disabled: false,
+  },
+  {
+    icon: 'lucide:thumbs-up',
+    tooltip: isUpvoted.value ? 'Upvoted' : 'Upvote Response',
+    onClick: upvoteMessage,
+    class: isUpvoted.value ? 'text-primary' : 'text-muted-foreground',
+    disabled: isUpvoted.value || form.processing,
+    testId: 'message-upvote',
+  },
+  {
+    icon: 'lucide:thumbs-down',
+    tooltip: isDownvoted.value ? 'Downvoted' : 'Downvote Response',
+    onClick: downvoteMessage,
+    class: isDownvoted.value ? 'text-primary' : 'text-muted-foreground',
+    disabled: isDownvoted.value || form.processing,
+    testId: 'message-downvote',
+  },
+])
 </script>
 
 <template>
-  <div v-if="!isLoading && message.role === Role.ASSISTANT" class="flex flex-row gap-2">
-    <Tooltip>
+  <div v-if="shouldShowActions" class="flex flex-row gap-2">
+    <Tooltip v-for="(action, index) in actionButtons" :key="index">
       <TooltipTrigger as-child>
         <Button
-          class="py-1 px-2 h-fit text-muted-foreground" variant="outline"
-          @click="copy(message.parts || '')"
+          :data-testid="action.testId"
+          class="py-1 px-2 h-fit !pointer-events-auto"
+          :class="action.class"
+          :disabled="action.disabled"
+          variant="outline"
+          @click="action.onClick"
         >
-          <Icon :icon="copied ? 'lucide:check' : 'lucide:copy'" />
+          <Icon :icon="action.icon" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>{{ copied ? 'Copied!' : 'Copy' }}</TooltipContent>
-    </Tooltip>
-
-    <Tooltip>
-      <TooltipTrigger as-child>
-        <Button
-          data-testid="message-upvote" class="py-1 px-2 h-fit !pointer-events-auto"
-          :class="form.is_upvoted === true ? 'text-primary' : 'text-muted-foreground'"
-          :disabled="form.is_upvoted === true || form.processing" variant="outline" @click="upvoteMessage"
-        >
-          <Icon icon="lucide:thumbs-up" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>{{ message.is_upvoted === true ? 'Upvoted' : 'Upvote Response' }}</TooltipContent>
-    </Tooltip>
-
-    <Tooltip>
-      <TooltipTrigger as-child>
-        <Button
-          data-testid="message-downvote" class="py-1 px-2 h-fit !pointer-events-auto"
-          :class="form.is_upvoted === false ? 'text-primary' : 'text-muted-foreground'"
-          :disabled="form.is_upvoted === false || form.processing" variant="outline" @click="downvoteMessage"
-        >
-          <Icon icon="lucide:thumbs-down" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>{{ message.is_upvoted === false ? 'Downvoted' : 'Downvote Response' }}</TooltipContent>
+      <TooltipContent>{{ action.tooltip }}</TooltipContent>
     </Tooltip>
   </div>
 </template>

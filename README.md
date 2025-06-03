@@ -52,7 +52,6 @@ GEMINI_API_KEY=your_api_key
 
 After installation, navigate to `http://localhost:8000` in your web browser and register a new account to start using the chat application.
 
-
 ## Security
 
 > **Warning**: Never commit sensitive data like API keys or credentials to your repository.

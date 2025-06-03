@@ -61,25 +61,27 @@ final class ChatController extends Controller
 
     public function update(Chat $chat, UpdateChatRequest $request): RedirectResponse
     {
-        if ($request->filled('message_id')) {
-            $messageId = $request->get('message_id');
+        $validated = $request->validated();
+
+        if (isset($validated['message_id'])) {
+            $messageId = $validated['message_id'];
 
             $message = $chat->messages()->find($messageId);
 
-            if ($message && $request->has('is_upvoted')) {
-                $upvoteValue = $request->boolean('is_upvoted');
+            if ($message && isset($validated['is_upvoted'])) {
+                $upvoteValue = (bool) $validated['is_upvoted'];
                 $message->update(['is_upvoted' => $upvoteValue]);
             }
         }
 
         $updates = [];
 
-        if ($request->filled('title')) {
-            $updates['title'] = $request->get('title');
+        if (isset($validated['title'])) {
+            $updates['title'] = $validated['title'];
         }
 
-        if ($request->filled('visibility')) {
-            $updates['visibility'] = $request->get('visibility');
+        if (isset($validated['visibility'])) {
+            $updates['visibility'] = $validated['visibility'];
         }
 
         if ($updates !== []) {

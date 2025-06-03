@@ -39,6 +39,7 @@ function updateChatVisibility(newVisibility: Visibility) {
   }, {
     preserveState: true,
     preserveScroll: true,
+    async: true,
     only: [],
   })
 }

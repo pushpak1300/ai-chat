@@ -12,12 +12,13 @@ use App\Enums\ModelName;
 use Illuminate\Http\Request;
 use Prism\Prism\Enums\Provider;
 use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Prism\Prism\ValueObjects\Messages\UserMessage;
 use Prism\Prism\ValueObjects\Messages\AssistantMessage;
 
 final class ChatStreamController extends Controller
 {
-    public function __invoke(Request $request, Chat $chat): Generator
+    public function __invoke(Request $request, Chat $chat): StreamedResponse
     {
         $userMessage = $request->string('message')->trim()->value();
         $model = $request->string('model', ModelName::GEMINI_2_0_FLASH_LITE->value)->trim()->value();

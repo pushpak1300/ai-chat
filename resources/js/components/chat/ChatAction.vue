@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 
-const chatId = inject<string>('chatId')
+const chatId = inject<string | null>('chatId', null)
 const deleteForm = useForm({})
 
 function deleteChat(chatId?: string) {
@@ -28,8 +28,8 @@ function deleteChat(chatId?: string) {
 </script>
 
 <template>
-  <AlertDialog>
-    <AlertDialogTrigger v-if="chatId" as-child>
+  <AlertDialog v-if="chatId">
+    <AlertDialogTrigger as-child>
       <Button
         variant="ghost"
         class="h-8 w-8 hover:text-destructive"

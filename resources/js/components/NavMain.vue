@@ -1,8 +1,21 @@
 <script setup lang="ts">
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { ChatHistory , type SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, usePage, router } from '@inertiajs/vue3';
 import { WhenVisible } from '@inertiajs/vue3';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Icon } from '@iconify/vue';
+import { Button } from '@/components/ui/button';
 
 withDefaults(defineProps<{
     chatHistory: ChatHistory;
@@ -23,7 +36,20 @@ withDefaults(defineProps<{
         links: []
     })
 });
+
 const page = usePage<SharedData>()
+
+const deleteChat = (chatId: number) => {
+    router.delete(route('chats.destroy', chatId), {
+        preserveScroll: true,
+        onSuccess: () => {
+            // If we're currently viewing the deleted chat, redirect to index
+            if (route('chats.show', chatId, false) === page.url) {
+                router.visit(route('chats.index'));
+            }
+        },
+    });
+};
 </script>
 
 <template>
@@ -33,12 +59,40 @@ const page = usePage<SharedData>()
         </SidebarGroupLabel>
         <SidebarMenu>
             <SidebarMenuItem v-for="historyItem in chatHistory.data" :key="historyItem.id">
-                <SidebarMenuButton as-child :class="{ 'bg-secondary text-secondary-foreground': route('chats.show', historyItem.id, false) === page.url }"
-                    :tooltip="historyItem.title">
-                    <Link prefetch :href="route('chats.show', historyItem.id)">
-                    <span>{{ historyItem.title }}</span>
-                    </Link>
-                </SidebarMenuButton>
+                <div class="flex items-center w-full group">
+                    <SidebarMenuButton as-child :class="{ 'bg-secondary text-secondary-foreground': route('chats.show', historyItem.id, false) === page.url }"
+                        :tooltip="historyItem.title" class="flex-1 mr-1">
+                        <Link prefetch :href="route('chats.show', historyItem.id)">
+                        <span class="truncate">{{ historyItem.title }}</span>
+                        </Link>
+                    </SidebarMenuButton>
+                    
+                    <AlertDialog>
+                        <AlertDialogTrigger as-child>
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                class="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                            >
+                                <Icon icon="lucide:trash-2" class="h-4 w-4" />
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete the chat "{{ historyItem.title }}" and remove all its messages from our servers.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction @click="deleteChat(historyItem.id)" class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                    Delete Chat
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
             </SidebarMenuItem>
         </SidebarMenu>
         <WhenVisible :params="{

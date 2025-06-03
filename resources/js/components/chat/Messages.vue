@@ -16,7 +16,6 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  setMessage: [message: MessageType]
   updateIsAtBottom: [isAtBottom: boolean]
 }>()
 
@@ -89,7 +88,6 @@ defineExpose({
           :is-loading="isStreaming && messages.length - 1 === index"
           :is-readonly="isReadonly"
           :requires-scroll-padding="hasSentMessage && index === messages.length - 1"
-          @set-message="$emit('setMessage', $event)"
         />
 
         <ThinkingMessage

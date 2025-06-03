@@ -22,7 +22,6 @@ const breadcrumbs: BreadcrumbItemType[] = [
 ]
 
 const input = ref('')
-const attachments = ref<Array<string>>([])
 const initialVisibilityType = ref<Visibility>(Visibility.PRIVATE)
 const selectedModel = useStorage<Model>(MODEL_KEY, AVAILABLE_MODELS.find(m => m.id === 'gemini-2.0-flash-lite') || AVAILABLE_MODELS[0])
 
@@ -30,10 +29,6 @@ provideVisibility(Visibility.PRIVATE, initialVisibilityType)
 
 function setInput(value: string) {
   input.value = value
-}
-
-function setAttachments(newAttachments: Array<string>) {
-  attachments.value = newAttachments
 }
 
 function sendInitialMessage(message: string) {
@@ -61,8 +56,7 @@ function append(message: string) {
   <AppLayout :breadcrumbs="breadcrumbs" :chat-history="chatHistory">
     <div class="h-[calc(100vh-4rem)] bg-background">
       <ChatContainer
-        :input="input" @set-input="setInput"
-        @set-attachments="setAttachments" @handle-submit="handleSubmit"
+        :input="input" @set-input="setInput" @handle-submit="handleSubmit"
         @append="append"
       />
     </div>

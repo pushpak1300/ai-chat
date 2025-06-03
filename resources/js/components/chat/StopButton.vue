@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import type { Message } from '@/types'
 import { Icon } from '@iconify/vue'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 const emit = defineEmits<{
   stop: []
-  setMessages: [messages: Array<Message>]
 }>()
 
 function handleStop() {

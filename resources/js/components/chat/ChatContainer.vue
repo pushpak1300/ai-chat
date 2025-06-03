@@ -24,8 +24,6 @@ withDefaults(defineProps<{
 
 defineEmits<{
   setInput: [value: string]
-  setMessage: [message: Message]
-  setAttachments: [attachments: Array<string>]
   append: [message: string]
   stop: []
   handleSubmit: []
@@ -48,7 +46,6 @@ function handleScrollToBottom() {
         :votes="votes"
         :messages="messages"
         :is-readonly="isReadonly"
-        @set-message="$emit('setMessage', $event)"
         @update-is-at-bottom="isAtBottom = $event"
       />
     </div>
@@ -62,7 +59,6 @@ function handleScrollToBottom() {
         :messages="messages"
         :is-at-bottom="isAtBottom"
         @set-input="$emit('setInput', $event)"
-        @set-attachments="$emit('setAttachments', $event)"
         @append="$emit('append', $event)"
         @stop="$emit('stop')"
         @handle-submit="$emit('handleSubmit')"

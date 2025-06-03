@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3'
+import type { SharedData } from '@/types'
+import { Head, Link, usePage } from '@inertiajs/vue3'
+
+const page = usePage<SharedData>()
 </script>
 
 <template>
@@ -11,7 +14,7 @@ import { Head, Link } from '@inertiajs/vue3'
     <header class="not-has-[nav]:hidden mb-6 w-full max-w-[335px] text-sm lg:max-w-4xl">
       <nav class="flex items-center justify-end gap-4">
         <Link
-          v-if="$page.props.auth.user"
+          v-if="page.props.auth.user"
           :href="route('chats.index')"
           class="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
         >

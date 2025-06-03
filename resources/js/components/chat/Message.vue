@@ -3,12 +3,9 @@ import type { Message } from '@/types'
 import { Icon } from '@iconify/vue'
 import { AnimatePresence, motion } from 'motion-v'
 import { ref } from 'vue'
-import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Role } from '@/types/enum'
 import MarkdownRenderer from './MarkdownRenderer.vue'
 import MessageActions from './MessageActions.vue'
-import MessageEditor from './MessageEditor.vue'
 
 defineProps<{
   message: Message
@@ -16,10 +13,6 @@ defineProps<{
   requiresScrollPadding: boolean
   isReadonly?: boolean
   chatId?: string
-}>()
-
-const emit = defineEmits<{
-  setMessage: [message: Message]
 }>()
 
 const mode = ref<'view' | 'edit'>('view')
@@ -65,7 +58,7 @@ const mode = ref<'view' | 'edit'>('view')
             class="flex flex-row justify-end gap-2"
           />
           <div class="flex flex-row gap-2 items-start">
-            <Tooltip v-if="message.role === 'user' && !isLoading">
+            <!-- <Tooltip v-if="message.role === 'user' && !isLoading">
               <TooltipTrigger as-child>
                 <Button
                   data-testid="message-edit-button"
@@ -77,7 +70,7 @@ const mode = ref<'view' | 'edit'>('view')
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Edit message</TooltipContent>
-            </Tooltip>
+            </Tooltip> -->
 
             <div
               v-if="mode === 'view'"
@@ -96,14 +89,6 @@ const mode = ref<'view' | 'edit'>('view')
                 No content available
               </div>
             </div>
-
-            <MessageEditor
-              v-else-if="mode === 'edit'"
-              :key="message.id"
-              :message="message"
-              @set-mode="mode = $event"
-              @set-message="emit('setMessage', $event)"
-            />
           </div>
 
           <MessageActions

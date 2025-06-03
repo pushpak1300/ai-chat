@@ -22,7 +22,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   setInput: [value: string]
-  setAttachments: [attachments: Array<string>]
   append: [message: string]
   stop: []
   handleSubmit: []

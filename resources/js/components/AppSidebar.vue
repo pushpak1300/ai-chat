@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { ChatHistory } from '@/types'
-import { Icon } from '@iconify/vue'
 import { Link } from '@inertiajs/vue3'
 import NavMain from '@/components/NavMain.vue'
 import NavUser from '@/components/NavUser.vue'
@@ -8,7 +7,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import AppLogo from './AppLogo.vue'
 
 defineProps<{
-  chatHistory?: ChatHistory
+  chatHistory?: ChatHistory | null
   chatNextPage?: number | null
 }>()
 </script>
@@ -21,7 +20,6 @@ defineProps<{
           <SidebarMenuButton size="lg" as-child>
             <Link :href="route('chats.index')">
               <AppLogo />
-              <Icon icon="lucide:plus" />
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>

@@ -4,7 +4,7 @@ import type { BreadcrumbItemType, Chat, ChatHistory, Message } from '@/types'
 import { Head, router } from '@inertiajs/vue3'
 import { useStream } from '@laravel/stream-vue'
 import { useStorage } from '@vueuse/core'
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
 import ChatContainer from '@/components/chat/ChatContainer.vue'
 import { provideVisibility } from '@/composables/useVisibility'
 import { AVAILABLE_MODELS, MODEL_KEY } from '@/constants/models'
@@ -27,10 +27,11 @@ const initialVisibilityType = ref<Visibility>(props.chat?.visibility || Visibili
 const selectedModel = useStorage<Model>(MODEL_KEY, AVAILABLE_MODELS[0])
 const messages = ref<Array<Message>>([...props.chat?.messages || []])
 const input = ref('')
-const attachments = ref<Array<string>>([])
 const votes = ref<Array<Record<string, any>>>([])
 
 const { visibility } = provideVisibility(props.chat?.visibility || Visibility.PRIVATE, initialVisibilityType)
+
+provide('chatId', props.chat.id)
 
 function updateChatVisibility(newVisibility: Visibility) {
   router.patch(route('chats.update', { chat: props.chat.id }), {
@@ -98,43 +99,10 @@ onMounted(() => {
   if (messages.value.length === 0 && props.chat.title) {
     sendInitialMessage(props.chat.title)
   }
-  else if (messages.value.length > 0) {
-    const lastMessage = messages.value[messages.value.length - 1]
-
-    if (lastMessage.role === Role.USER) {
-      messages.value.push({
-        role: Role.ASSISTANT,
-        parts: '',
-      })
-
-      send({
-        message: lastMessage.parts,
-        model: selectedModel.value.id,
-        visibility: initialVisibilityType.value,
-        intialMessage: false,
-      })
-    }
-  }
 })
 
 function setInput(value: string) {
   input.value = value
-}
-
-async function setMessage(message: Message) {
-  router.patch(route('chats.update', { chat: props.chat.id }), {
-    message_id: message.id,
-    message: message.parts,
-  }, {
-    async: true,
-    onSuccess: () => {
-      messages.value.splice(messages.value.length - 1, 1, message)
-    },
-  })
-}
-
-function setAttachments(newAttachments: Array<string>) {
-  attachments.value = newAttachments
 }
 
 async function handleSubmit() {
@@ -176,12 +144,9 @@ const pageTitle = computed(() => {
         :messages="messages"
         :input="input"
         :stream-id="id"
-        :attachments="attachments"
         :votes="votes"
         :is-readonly="false"
         @set-input="setInput"
-        @set-message="setMessage"
-        @set-attachments="setAttachments"
         @stop="stop"
         @handle-submit="handleSubmit"
       />

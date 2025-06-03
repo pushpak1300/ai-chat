@@ -214,33 +214,6 @@ describe('ChatController', function (): void {
             $response->assertRedirect(route('chats.show', $this->chat));
         });
 
-        it('updates message content and deletes subsequent messages', function (): void {
-            $message1 = Message::factory()->for($this->chat)->create([
-                'role' => 'user',
-                'parts' => 'Original message',
-                'attachments' => [],
-                'created_at' => now()->subMinute(),
-            ]);
-            $message2 = Message::factory()->for($this->chat)->create([
-                'role' => 'assistant',
-                'parts' => 'Response message',
-                'attachments' => [],
-                'created_at' => now(),
-            ]);
-
-            $data = [
-                'message_id' => $message1->id,
-                'message' => 'Updated message content',
-            ];
-
-            $response = $this->patch(route('chats.update', $this->chat), $data);
-
-            expect(Message::query()->find($message1->id))->toBeNull();
-            expect(Message::query()->find($message2->id))->toBeNull();
-
-            $response->assertRedirect(route('chats.show', $this->chat));
-        });
-
         it('validates message_id exists', function (): void {
             $data = [
                 'message_id' => 'non-existent-id',

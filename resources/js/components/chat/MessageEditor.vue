@@ -10,7 +10,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   setMode: [mode: 'view' | 'edit']
-  setMessage: [message: Message]
 }>()
 
 const textareaRef = ref<InstanceType<typeof Textarea>>()
@@ -32,10 +31,6 @@ function handleCancel() {
 
 function handleSave() {
   if (message.value.trim()) {
-    emit('setMessage', {
-      ...props.message,
-      parts: message.value.trim(),
-    })
     emit('setMode', 'view')
   }
 }

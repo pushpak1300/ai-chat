@@ -21,7 +21,7 @@ final class ChatController extends Controller
         $chatsHistory = Auth::user()->chats()->orderBy('updated_at', 'desc')->paginate(25);
 
         return Inertia::render('Chat/Index', [
-            'chatHistory' => fn () => Inertia::deepMerge($chatsHistory),
+            'chatHistory' => Inertia::deepMerge($chatsHistory),
         ]);
     }
 
@@ -50,7 +50,7 @@ final class ChatController extends Controller
 
         return Inertia::render('Chat/Show', [
             'chat' => fn () => $chat->load('messages'),
-            'chatHistory' => fn () => Inertia::deepMerge($chatHistory),
+            'chatHistory' => Inertia::deepMerge($chatHistory),
         ]);
     }
 
@@ -68,12 +68,6 @@ final class ChatController extends Controller
             if ($request->has('is_upvoted')) {
                 $upvoteValue = $request->boolean('is_upvoted');
                 $message->update(['is_upvoted' => $upvoteValue]);
-            }
-
-            if ($request->filled('message')) {
-                $chat->messages()
-                    ->where('id', '>=', $message->id)
-                    ->delete();
             }
         }
 
@@ -102,6 +96,6 @@ final class ChatController extends Controller
         $chat->messages()->delete();
         $chat->delete();
 
-        return back();
+        return to_route('chats.index');
     }
 }

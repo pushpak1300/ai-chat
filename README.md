@@ -1,4 +1,4 @@
-# Prism Chat
+![prism](https://github.com/user-attachments/assets/e97667bc-1335-48f1-8c23-474d3f31f49a)
 
 A modern AI chat starter kit built with Laravel, featuring real-time streaming responses using Prism, Inertia.js, Vue.js, and TailwindCSS.
 
@@ -31,6 +31,14 @@ Prism Chat provides a solid foundation for building AI-powered chat applications
 - Laravel CLI
 
 ### Installation
+
+Installation can be done by laravel installer.
+
+```bash
+laravel new --using=pushpak1300/ai-chat ai-chat
+```
+
+Or Normal Installation
 
 1. Clone the repository:
    ```bash
@@ -84,17 +92,6 @@ Prism Chat provides a solid foundation for building AI-powered chat applications
     bun run dev
     ```
 
-OR
-
-Installation can be done by laravel installer.
-
-```bash
-composer create-project laravel/laravel ai-chat
-```
-
-```bash
-laravel new --using=pushpak1300/ai-chat ai-chat
-```
 
 ## Configuration
 
@@ -108,23 +105,6 @@ GEMINI_API_KEY=your_api_key
 
 After installation, navigate to `http://localhost:8000` in your web browser and register a new account to start using the chat application.
 
-## Development
-
-### Testing
-
-Run the test suite with:
-
-```bash
-composer run test
-```
-
-### Building for Production
-
-```bash
-npm run build
-# or
-bun run build
-```
 
 ## Security
 

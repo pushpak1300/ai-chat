@@ -69,7 +69,7 @@ const { isFetching, isStreaming, send, cancel, id } = useStream(`stream/${props.
     })
   },
   onFinish: () => {
-    router.reload({ only: ['chat', 'chatHistory'] })
+    router.reload();
   }
 })
 
@@ -122,7 +122,6 @@ router.patch(route('chats.update', { chat: props.chat.id }), {
     message_id: message.id,
     message: message.parts,
   }, {
-    only: ['chat', 'chatHistory'],
     async: true,
     onSuccess: () => {
         messages.value.splice(messages.value.length - 1, 1, message)

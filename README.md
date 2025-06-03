@@ -25,10 +25,10 @@ Prism Chat provides a solid foundation for building AI-powered chat applications
 
 ### Prerequisites
 
-- PHP 8.2+
+- PHP 8.3+
 - Composer
 - Node.js and npm/bun
-- Laravel CLI
+- SQLite
 
 ### Installation
 
@@ -38,60 +38,7 @@ Installation can be done by laravel installer.
 laravel new --using=pushpak1300/ai-chat ai-chat
 ```
 
-Or Normal Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/pushpak1300/ai-chat.git
-   cd ai-chat
-   ```
-
-2. Install PHP dependencies:
-   ```bash
-   composer install
-   ```
-
-3. Install JavaScript dependencies:
-   ```bash
-   npm install
-   # or
-   bun install
-   ```
-
-4. Create a copy of the environment file:
-   ```bash
-   cp .env.example .env
-   ```
-
-5. Generate application key:
-   ```bash
-   php artisan key:generate
-   ```
-
-6. Set up your database connection in `.env`
-
-7. Run migrations:
-   ```bash
-   php artisan migrate
-   ```
-
-8. Seed the database (optional):
-   ```bash
-   php artisan db:seed
-   ```
-
-9. Start the development server:
-   ```bash
-   php artisan serve
-   ```
-
-10. Compile assets:
-    ```bash
-    npm run dev
-    # or
-    bun run dev
-    ```
-
+Or follow normal laravel installation process.
 
 ## Configuration
 

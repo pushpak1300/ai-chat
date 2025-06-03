@@ -13,7 +13,6 @@ Prism Chat provides a solid foundation for building AI-powered chat applications
 - **Authentication System**: Built-in user authentication and management
 - **Responsive UI**: Modern interface that works across devices
 - **Appearance Settings**: Light/dark mode support
-- **File Attachments**: Support for multimodal inputs
 
 ## Tech Stack
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { Model } from '@/constants/models'
 import { Icon } from '@iconify/vue'
 import { useStorage } from '@vueuse/core'
 import { Button } from '@/components/ui/button'
@@ -8,23 +9,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { AVAILABLE_MODELS, MODEL_KEY } from '@/constants/models'
 
-const availableModels = [
-  {
-    id: 'gemini-2.0-flash',
-    name: 'Gemini 2.0 Flash',
-    description: 'Cheapest model, best for smarter tasks',
-  },
-  {
-    id: 'gemini-2.0-flash-lite',
-    name: 'Gemini 2.0 Flash Lite',
-    description: 'Cheapest model, best for simpler tasks',
-  },
-]
+const selectedModel = useStorage<Model>(MODEL_KEY, AVAILABLE_MODELS[0])
 
-const selectedModel = useStorage('selected-model', availableModels[0])
-
-function selectModel(model: any) {
+function selectModel(model: Model) {
   selectedModel.value = model
 }
 </script>
@@ -37,13 +26,13 @@ function selectModel(model: any) {
         variant="outline"
         class="md:px-2 md:h-[34px]"
       >
-        {{ selectedModel.name }}
+        {{ selectedModel.value.name }}
         <Icon icon="lucide:chevron-down" class="ml-auto" />
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="start" class="min-w-[300px]">
       <DropdownMenuItem
-        v-for="model in availableModels"
+        v-for="model in AVAILABLE_MODELS"
         :key="model.id"
         :data-testid="`model-selector-item-${model.id}`"
         @select="selectModel(model)"
@@ -54,7 +43,7 @@ function selectModel(model: any) {
             {{ model.description }}
           </div>
         </div>
-        <Icon v-if="model.id === selectedModel.id" icon="lucide:check-circle" class="ml-auto" />
+        <Icon v-if="model.id === selectedModel.value.id" icon="lucide:check-circle" class="ml-auto" />
       </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>

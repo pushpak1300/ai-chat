@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import type { Model } from '@/constants/models'
 import type { BreadcrumbItemType, ChatHistory } from '@/types'
 import { Head, router } from '@inertiajs/vue3'
 import { useStorage } from '@vueuse/core'
 import { ref } from 'vue'
 import ChatContainer from '@/components/chat/ChatContainer.vue'
 import { provideVisibility } from '@/composables/useVisibility'
+import { AVAILABLE_MODELS, MODEL_KEY } from '@/constants/models'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Visibility } from '@/types/enum'
 
@@ -22,7 +24,7 @@ const breadcrumbs: BreadcrumbItemType[] = [
 const input = ref('')
 const attachments = ref<Array<string>>([])
 const initialVisibilityType = ref<Visibility>(Visibility.PRIVATE)
-const selectedModel = useStorage('selected-model')
+const selectedModel = useStorage<Model>(MODEL_KEY, AVAILABLE_MODELS.find(m => m.id === 'gemini-2.0-flash-lite') || AVAILABLE_MODELS[0])
 
 provideVisibility(Visibility.PRIVATE, initialVisibilityType)
 

@@ -21,11 +21,17 @@ const breadcrumbs: BreadcrumbItemType[] = [
   },
 ]
 
-const input = ref('')
+interface ChatCreateParams {
+  message: string
+  model: string
+  visibility: Visibility
+}
+
+const input = ref<string>('')
 const initialVisibilityType = ref<Visibility>(Visibility.PRIVATE)
 const selectedModel = useStorage<Model>(
   MODEL_KEY,
-  AVAILABLE_MODELS.find(m => m.id === 'gemini-2.0-flash-lite') || AVAILABLE_MODELS[0],
+  AVAILABLE_MODELS.find((m): boolean => m.id === 'gemini-2.0-flash-lite') ?? AVAILABLE_MODELS[0],
 )
 
 provideVisibility(Visibility.PRIVATE, initialVisibilityType)
@@ -34,12 +40,14 @@ function setInput(value: string): void {
   input.value = value
 }
 
-function sendInitialMessage(message: string): void {
-  router.post(route('chats.store'), {
-    message,
+function sendInitialMessage(userMessage: string): void {
+  const params: ChatCreateParams = {
+    message: userMessage,
     model: selectedModel.value.id,
     visibility: initialVisibilityType.value,
-  })
+  }
+
+  router.post(route('chats.store'), params)
 }
 
 function handleSubmit(): void {

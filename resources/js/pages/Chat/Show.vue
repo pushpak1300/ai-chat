@@ -16,8 +16,8 @@ const props = defineProps<{
   chat: Chat
 }>()
 
-const pageTitle = computed(() => props.chat?.title || 'Chat')
-const initialVisibility = computed(() => props.chat?.visibility || Visibility.PRIVATE)
+const pageTitle = computed<string>(() => props.chat?.title || 'Chat')
+const initialVisibility = computed<Visibility>(() => props.chat?.visibility || Visibility.PRIVATE)
 
 const breadcrumbs: BreadcrumbItemType[] = [
   {
@@ -26,11 +26,17 @@ const breadcrumbs: BreadcrumbItemType[] = [
   },
 ]
 
+interface StreamParams {
+  message: string
+  model: string
+  visibility: Visibility
+}
+
 const initialVisibilityType = ref<Visibility>(initialVisibility.value)
 const selectedModel = useStorage<Model>(MODEL_KEY, AVAILABLE_MODELS[0])
 const messages = ref<Message[]>([...(props.chat?.messages || [])])
-const input = ref('')
-const votes = ref<Record<string, any>[]>([])
+const input = ref<string>('')
+const votes = ref<Record<string, unknown>[]>([])
 
 const { visibility } = provideVisibility(initialVisibility.value, initialVisibilityType)
 
@@ -86,21 +92,25 @@ const { isFetching, isStreaming, send, cancel, id } = useStream(`stream/${props.
 })
 
 function sendInitialMessage(messageContent: string): void {
-  messages.value.push({
+  const userMessage: Message = {
     role: Role.USER,
     parts: messageContent,
-  })
+  }
+
+  messages.value.push(userMessage)
 
   messages.value.push({
     role: Role.ASSISTANT,
     parts: '',
   })
 
-  send({
+  const params: StreamParams = {
     message: messageContent,
     model: selectedModel.value.id,
     visibility: initialVisibilityType.value,
-  })
+  }
+
+  send(params)
 }
 
 function setInput(value: string): void {
@@ -114,18 +124,22 @@ async function handleSubmit(): Promise<void> {
     input.value = ''
 
     await nextTick(() => {
-      messages.value.push({
+      const userMessage: Message = {
         role: Role.USER,
         parts: trimmedInput,
         attachments: [],
-      })
+      }
+
+      messages.value.push(userMessage)
     })
 
-    send({
+    const params: StreamParams = {
       message: trimmedInput,
       model: selectedModel.value.id,
       visibility: initialVisibilityType.value,
-    })
+    }
+
+    send(params)
   }
 }
 

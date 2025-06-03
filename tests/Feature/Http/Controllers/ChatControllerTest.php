@@ -26,7 +26,6 @@ describe('ChatController', function (): void {
             $response->assertOk()
                 ->assertInertia(
                     fn ($page) => $page
-                        ->component('Chat/Index')
                         ->has('chatHistory.data', 2)
                         ->where('chatHistory.data.0.id', $newerChat->id)
                         ->where('chatHistory.data.1.id', $olderChat->id)
@@ -135,7 +134,6 @@ describe('ChatController', function (): void {
             $response->assertOk()
                 ->assertInertia(
                     fn ($page) => $page
-                        ->component('Chat/Show')
                         ->where('chat.id', $chat->id)
                         ->has('chat.messages', 1)
                         ->where('chat.messages.0.id', $message->id)

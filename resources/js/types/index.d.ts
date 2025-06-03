@@ -44,6 +44,12 @@ export interface HistoryItem {
   visibility: Visibility
 }
 
+export interface PaginationLink {
+  url: string | null
+  label: string
+  active: boolean
+}
+
 export interface ChatHistory {
   data: HistoryItem[]
   path: string
@@ -56,7 +62,7 @@ export interface ChatHistory {
   last_page_url: string
   next_page_url: string | null
   prev_page_url: string | null
-  links: Array<any>
+  links: PaginationLink[]
   current_page: number
 }
 
@@ -69,8 +75,8 @@ export interface Message {
   id?: string
   chat_id?: string
   role: Role
-  parts?: string
-  attachments?: Array<string>
+  parts: string
+  attachments?: string[]
   is_upvoted?: boolean
   created_at?: string
   updated_at?: string
@@ -85,5 +91,5 @@ export interface Chat {
   visibility: Visibility
   created_at: string
   updated_at: string
-  messages?: Array<Message>
+  messages?: Message[]
 }

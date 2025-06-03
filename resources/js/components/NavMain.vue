@@ -43,8 +43,8 @@ const page = usePage<SharedData>()
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton
-            v-for="item in mainMenuItems" :key="item.label" class="flex items-center font-bold"
-            :as="Link" :href="item.href" :aria-label="item.label"
+            v-for="item in mainMenuItems" :key="item.label"
+            class="flex items-center font-bold" :as="Link" :href="item.href" :aria-label="item.label"
           >
             <Icon :icon="item.icon" class="w-4 h-4" />
             <span class="ml-2">
@@ -70,7 +70,7 @@ const page = usePage<SharedData>()
             }" :tooltip="historyItem.title"
           >
             <Link
-              prefetch :href="route('chats.show', historyItem.id)"
+              :prefetch="['mount', 'hover']" cache-for="1m" :href="route('chats.show', historyItem.id)"
               :aria-label="`Open chat: ${historyItem.title}`" class="block w-full"
             >
               <span class="truncate">{{ historyItem.title }}</span>

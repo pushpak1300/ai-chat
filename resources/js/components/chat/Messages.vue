@@ -26,10 +26,7 @@
       </div>
     </template>
 
-    <div
-      ref="endRef"
-      class="shrink-0 min-w-[24px] min-h-[24px]"
-    />
+
   </div>
 </template>
 
@@ -59,7 +56,6 @@ const { isFetching, isStreaming } = useStream(`stream/${props.chatId}`, { id: pr
 
 const {
   containerRef,
-  endRef,
   isAtBottom,
   scrollToBottomInstant,
 } = useScrollToBottom()

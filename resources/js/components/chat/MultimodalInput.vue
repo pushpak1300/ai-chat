@@ -40,7 +40,6 @@ import Textarea from '@/components/ui/textarea/Textarea.vue'
 import Button from '@/components/ui/button/Button.vue'
 import SuggestedActions from '@/components/chat/SuggestedActions.vue'
 import PreviewAttachment from '@/components/chat/PreviewAttachment.vue'
-import AttachmentsButton from '@/components/chat/AttachmentsButton.vue'
 import StopButton from '@/components/chat/StopButton.vue'
 import SendButton from '@/components/chat/SendButton.vue'
 import { Icon } from '@iconify/vue'
@@ -68,7 +67,6 @@ const emit = defineEmits<{
 const { isFetching, isStreaming } = useStream(`stream/${props.chatId}`, { id: props.streamId })
 
 const textareaRef = ref<HTMLTextAreaElement>()
-const fileInputRef = ref<HTMLInputElement>()
 const uploadQueue = ref<Array<string>>([])
 
 let adjustHeightTimeout: ReturnType<typeof setTimeout> | null = null

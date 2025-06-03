@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch, onUnmounted } from 'vue'
+import { computed, watch, ref } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 import { WhenVisible } from '@inertiajs/vue3'
 import { useLocalStorage } from '@vueuse/core'
@@ -36,49 +36,55 @@ const props = withDefaults(defineProps<Props>(), {
 
 const page = usePage<SharedData>()
 
-const allChatHistory = useLocalStorage<HistoryItem[]>('prism-chat-history', [...props.chatHistory.data])
-const lastLoadedPage = ref(props.chatHistory.current_page)
-const isInitialized = ref(false)
+const allChatHistory = useLocalStorage<HistoryItem[]>('chat-history', [])
+const lastLoadedPage = useLocalStorage<number>('chat-last-page', 0)
+const maxLoadedPage = useLocalStorage<number>('chat-max-page', 0)
+
+
 
 const hasMorePages = computed(() => props.chatHistory.next_page_url !== null)
 const hasHistoryItems = computed(() => allChatHistory.value.length > 0)
-const nextPageNumber = computed(() => props.chatHistory.current_page + 1)
+const nextPageNumber = computed(() => maxLoadedPage.value + 1)
 
 const isCurrentChat = (chatId: string | number): boolean => {
   return route('chats.show', chatId, false) === page.url
 }
 
+const handleChatLinkClick = () => {
+  // Store scroll position when clicking chat links
+}
+
 const handleChatHistoryUpdate = (newChatHistory: ChatHistory) => {
-  if (!isInitialized.value) {
+  if (allChatHistory.value.length === 0) {
     allChatHistory.value = [...newChatHistory.data]
     lastLoadedPage.value = newChatHistory.current_page
-    isInitialized.value = true
+    maxLoadedPage.value = newChatHistory.current_page
     return
   }
 
-  if (newChatHistory.current_page > lastLoadedPage.value) {
+  if (newChatHistory.current_page > maxLoadedPage.value) {
     const newItems = newChatHistory.data.filter(
       item => !allChatHistory.value.some(existing => existing.id === item.id)
     )
     allChatHistory.value.push(...newItems)
-    lastLoadedPage.value = newChatHistory.current_page
+    maxLoadedPage.value = newChatHistory.current_page
   }
+
+  lastLoadedPage.value = newChatHistory.current_page
 }
 
-const stopWatcher = watch(
-  () => props.chatHistory,
+watch(() => props.chatHistory,
   handleChatHistoryUpdate,
   { deep: true, immediate: true }
 )
 
-onUnmounted(() => {
-  stopWatcher()
-})
+
 </script>
 
 <template>
   <SidebarGroup
     v-if="hasHistoryItems"
+    ref="sidebarGroupRef"
     class="px-2 py-0"
     role="navigation"
     aria-label="Chat History Navigation"
@@ -101,9 +107,12 @@ onUnmounted(() => {
         >
           <Link
             prefetch
+            :preserve-scroll="true"
+            :only="['chat']"
             :href="route('chats.show', historyItem.id)"
             :aria-label="`Open chat: ${historyItem.title}`"
             class="block w-full"
+            @click="handleChatLinkClick()"
           >
             <span class="truncate">{{ historyItem.title }}</span>
           </Link>
@@ -116,7 +125,7 @@ onUnmounted(() => {
       :params="{
         preserveUrl: true,
         data: { page: nextPageNumber },
-        only: ['chatHistory'],
+        only: ['chatHistory']
       }"
       :always="hasMorePages"
     >

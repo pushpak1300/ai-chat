@@ -18,7 +18,6 @@ final class ChatController extends Controller
      */
     public function index()
     {
-        /** @var LengthAwarePaginator<Chat> $chatHistory */
         $chatsHistory = Auth::user()->chats()->orderBy('updated_at', 'desc')->paginate(25);
 
         return Inertia::render('Chat/Index', [

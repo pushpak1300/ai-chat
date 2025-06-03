@@ -22,7 +22,7 @@ const breadcrumbs: BreadcrumbItemType[] = [
 const input = ref('')
 const attachments = ref<Array<string>>([])
 const initialVisibilityType = ref<Visibility>(Visibility.PRIVATE)
-const selectedModel = useStorage('selected-model', { id: 'gemini-2.0-flash-lite' })
+const selectedModel = useStorage('selected-model')
 
 provideVisibility(Visibility.PRIVATE, initialVisibilityType)
 

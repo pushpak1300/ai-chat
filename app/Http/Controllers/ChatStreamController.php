@@ -32,6 +32,7 @@ final class ChatStreamController extends Controller
         return Response::stream(function () use ($userMessage, $chat, $model): Generator {
             $finalResponse = '';
             $stream = Prism::text()
+                ->withSystemPrompt(view('prompts.system'))
                 ->using(Provider::Gemini, $model)
                 ->withPrompt($userMessage)
                 ->asStream();

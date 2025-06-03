@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3'
-import { Breadcrumb, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 
-interface BreadcrumbItem {
+interface BreadcrumbItemType {
   title: string
   href?: string
 }
 
 defineProps<{
-  breadcrumbs: BreadcrumbItem[]
+  breadcrumbs: BreadcrumbItemType[]
 }>()
 </script>
 

@@ -1,8 +1,8 @@
 {
   "$schema": "https://getcomposer.org/schema.json",
-  "name": "laravel/vue-starter-kit",
+  "name": "pushpak1300/ai-chat",
   "type": "project",
-  "description": "The skeleton application for the Laravel framework.",
+  "description": "A modern AI chat starter kit built with Laravel, featuring real-time streaming responses using Prism, Inertia.js, Vue.js, and TailwindCSS.",
   "keywords": [
     "laravel",
     "framework"

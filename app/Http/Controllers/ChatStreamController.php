@@ -12,8 +12,8 @@ use App\Enums\ModelName;
 use Illuminate\Http\Request;
 use Prism\Prism\Enums\Provider;
 use Illuminate\Support\Facades\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Prism\Prism\ValueObjects\Messages\UserMessage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Prism\Prism\ValueObjects\Messages\AssistantMessage;
 
 final class ChatStreamController extends Controller

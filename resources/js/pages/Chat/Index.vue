@@ -23,15 +23,18 @@ const breadcrumbs: BreadcrumbItemType[] = [
 
 const input = ref('')
 const initialVisibilityType = ref<Visibility>(Visibility.PRIVATE)
-const selectedModel = useStorage<Model>(MODEL_KEY, AVAILABLE_MODELS.find(m => m.id === 'gemini-2.0-flash-lite') || AVAILABLE_MODELS[0])
+const selectedModel = useStorage<Model>(
+  MODEL_KEY,
+  AVAILABLE_MODELS.find(m => m.id === 'gemini-2.0-flash-lite') || AVAILABLE_MODELS[0],
+)
 
 provideVisibility(Visibility.PRIVATE, initialVisibilityType)
 
-function setInput(value: string) {
+function setInput(value: string): void {
   input.value = value
 }
 
-function sendInitialMessage(message: string) {
+function sendInitialMessage(message: string): void {
   router.post(route('chats.store'), {
     message,
     model: selectedModel.value.id,
@@ -39,14 +42,14 @@ function sendInitialMessage(message: string) {
   })
 }
 
-function handleSubmit() {
+function handleSubmit(): void {
   const trimmedInput = input.value.trim()
   if (trimmedInput) {
     sendInitialMessage(trimmedInput)
   }
 }
 
-function append(message: string) {
+function append(message: string): void {
   sendInitialMessage(message)
 }
 </script>
@@ -56,7 +59,9 @@ function append(message: string) {
   <AppLayout :breadcrumbs="breadcrumbs" :chat-history="chatHistory">
     <div class="h-[calc(100vh-4rem)] bg-background">
       <ChatContainer
-        :input="input" @set-input="setInput" @handle-submit="handleSubmit"
+        :input="input"
+        @set-input="setInput"
+        @handle-submit="handleSubmit"
         @append="append"
       />
     </div>

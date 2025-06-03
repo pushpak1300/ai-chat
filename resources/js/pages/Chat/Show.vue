@@ -16,6 +16,9 @@ const props = defineProps<{
   chat: Chat
 }>()
 
+const pageTitle = computed(() => props.chat?.title || 'Chat')
+const initialVisibility = computed(() => props.chat?.visibility || Visibility.PRIVATE)
+
 const breadcrumbs: BreadcrumbItemType[] = [
   {
     title: 'Chat',
@@ -23,25 +26,27 @@ const breadcrumbs: BreadcrumbItemType[] = [
   },
 ]
 
-const initialVisibilityType = ref<Visibility>(props.chat?.visibility || Visibility.PRIVATE)
+const initialVisibilityType = ref<Visibility>(initialVisibility.value)
 const selectedModel = useStorage<Model>(MODEL_KEY, AVAILABLE_MODELS[0])
-const messages = ref<Array<Message>>([...props.chat?.messages || []])
+const messages = ref<Message[]>([...(props.chat?.messages || [])])
 const input = ref('')
-const votes = ref<Array<Record<string, any>>>([])
+const votes = ref<Record<string, any>[]>([])
 
-const { visibility } = provideVisibility(props.chat?.visibility || Visibility.PRIVATE, initialVisibilityType)
+const { visibility } = provideVisibility(initialVisibility.value, initialVisibilityType)
 
 provide('chatId', props.chat.id)
 
-function updateChatVisibility(newVisibility: Visibility) {
-  router.patch(route('chats.update', { chat: props.chat.id }), {
-    visibility: newVisibility,
-  }, {
-    preserveState: true,
-    preserveScroll: true,
-    async: true,
-    only: [],
-  })
+function updateChatVisibility(newVisibility: Visibility): void {
+  router.patch(
+    route('chats.update', { chat: props.chat.id }),
+    { visibility: newVisibility },
+    {
+      preserveState: true,
+      preserveScroll: true,
+      async: true,
+      only: [],
+    },
+  )
 }
 
 watch(visibility, (newVisibility, oldVisibility) => {
@@ -50,35 +55,37 @@ watch(visibility, (newVisibility, oldVisibility) => {
   }
 }, { immediate: false })
 
-const { isFetching, isStreaming, send, cancel, id } = useStream(`stream/${props.chat.id}`, {
-  onData: (chunk: string) => {
-    const lastMessage = messages.value[messages.value.length - 1]
+function handleStreamData(chunk: string): void {
+  const lastMessage = messages.value[messages.value.length - 1]
 
-    if (!lastMessage || lastMessage.role !== Role.ASSISTANT) {
-      messages.value.push({
-        role: Role.ASSISTANT,
-        parts: chunk,
-      })
-    }
-    else {
-      lastMessage.parts += chunk
-    }
-  },
-  onError: (error: Error) => {
-    console.error('Stream error:', error)
-    nextTick(() => {
-      messages.value.push({
-        role: Role.ASSISTANT,
-        parts: 'Sorry, there was an error processing your request. Please try again.',
-      })
+  if (!lastMessage || lastMessage.role !== Role.ASSISTANT) {
+    messages.value.push({
+      role: Role.ASSISTANT,
+      parts: chunk,
     })
-  },
-  onFinish: () => {
-    router.reload()
-  },
+  }
+  else {
+    lastMessage.parts += chunk
+  }
+}
+
+function handleStreamError(error: Error): void {
+  console.error('Stream error:', error)
+  nextTick(() => {
+    messages.value.push({
+      role: Role.ASSISTANT,
+      parts: 'Sorry, there was an error processing your request. Please try again.',
+    })
+  })
+}
+
+const { isFetching, isStreaming, send, cancel, id } = useStream(`stream/${props.chat.id}`, {
+  onData: handleStreamData,
+  onError: handleStreamError,
+  onFinish: () => router.reload(),
 })
 
-function sendInitialMessage(messageContent: string) {
+function sendInitialMessage(messageContent: string): void {
   messages.value.push({
     role: Role.USER,
     parts: messageContent,
@@ -96,43 +103,40 @@ function sendInitialMessage(messageContent: string) {
   })
 }
 
-onMounted(() => {
-  if (messages.value.length === 0 && props.chat.title) {
-    sendInitialMessage(props.chat.title)
-  }
-})
-
-function setInput(value: string) {
+function setInput(value: string): void {
   input.value = value
 }
 
-async function handleSubmit() {
-  if (input.value.trim() && !isFetching.value && !isStreaming.value && props.chat.id) {
-    const userMessage = input.value.trim()
+async function handleSubmit(): Promise<void> {
+  const trimmedInput = input.value.trim()
+
+  if (trimmedInput && !isFetching.value && !isStreaming.value && props.chat.id) {
     input.value = ''
 
     await nextTick(() => {
       messages.value.push({
         role: Role.USER,
-        parts: userMessage,
+        parts: trimmedInput,
         attachments: [],
       })
     })
 
     send({
-      message: userMessage,
+      message: trimmedInput,
       model: selectedModel.value.id,
       visibility: initialVisibilityType.value,
     })
   }
 }
 
-function stop() {
+function stop(): void {
   cancel()
 }
 
-const pageTitle = computed(() => {
-  return props.chat?.title || 'Chat'
+onMounted(() => {
+  if (messages.value.length === 0 && props.chat.title) {
+    sendInitialMessage(props.chat.title)
+  }
 })
 </script>
 

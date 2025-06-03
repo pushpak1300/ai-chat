@@ -2,7 +2,7 @@
   <div class="max-w-3xl mx-auto px-8 size-full flex flex-col justify-center">
     <Transition
       appear
-      enter-active-class="transition-all duration-200 delay-500"
+      enter-active-class="transition-all duration-200"
       enter-from-class="opacity-0 translate-y-2"
       enter-to-class="opacity-1 translate-y-0"
     >
@@ -13,7 +13,7 @@
 
     <Transition
       appear
-      enter-active-class="transition-all duration-200 delay-600"
+      enter-active-class="transition-all duration-200"
       enter-from-class="opacity-0 translate-y-2"
       enter-to-class="opacity-1 translate-y-0"
     >
@@ -23,7 +23,3 @@
     </Transition>
   </div>
 </template>
-
-<script setup lang="ts">
-// No props or logic needed for this simple component
-</script>

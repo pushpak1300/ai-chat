@@ -9,7 +9,6 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoreChatRequest;
 use App\Http\Requests\UpdateChatRequest;
-use App\Models\Message;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 final class ChatController extends Controller
@@ -19,11 +18,11 @@ final class ChatController extends Controller
      */
     public function index()
     {
-        /** @var LengthAwarePaginator<Chat> $chats */
-        $chats = Auth::user()->chats()->orderBy('updated_at', 'desc')->paginate(25);
+        /** @var LengthAwarePaginator<Chat> $chatHistory */
+        $chatsHistory = Auth::user()->chats()->orderBy('updated_at', 'desc')->paginate(25);
 
         return Inertia::render('Chat/Index', [
-            'chatHistory' => Inertia::deepMerge($chats),
+            'chatHistory' => fn () => Inertia::deepMerge($chatsHistory),
         ]);
     }
 
@@ -47,12 +46,12 @@ final class ChatController extends Controller
     {
         abort_if($chat->user_id !== Auth::id() && $chat->visibility !== 'public', 403);
 
-        /** @var LengthAwarePaginator<Chat> $chats */
-        $chats = Auth::user()->chats()->orderBy('updated_at', 'desc')->paginate(25);
+        /** @var LengthAwarePaginator<Chat> $chatHistory */
+        $chatHistory = Auth::user()->chats()->orderBy('updated_at', 'desc')->paginate(25);
 
         return Inertia::render('Chat/Show', [
             'chat' => fn () => $chat->load('messages'),
-            'chatHistory' => fn () => Inertia::deepMerge($chats),
+            'chatHistory' => fn () => Inertia::deepMerge($chatHistory),
         ]);
     }
 
@@ -104,6 +103,6 @@ final class ChatController extends Controller
         $chat->messages()->delete();
         $chat->delete();
 
-        return to_route('chats.index');
+        return back();
     }
 }

@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use Inertia\Inertia;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 final class HandleInertiaRequests extends Middleware
 {

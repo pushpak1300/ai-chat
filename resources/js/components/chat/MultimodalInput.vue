@@ -25,10 +25,6 @@
                 'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
             ]" rows="2" @update:model-value="handleInput" @keydown="handleKeyDown" />
 
-        <div class="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
-            <AttachmentsButton :file-input-ref="fileInputRef" :chat-id="chatId" :stream-id="streamId" />
-        </div>
-
         <div class="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
             <StopButton v-if="isStreaming" @stop="$emit('stop')" />
             <SendButton v-else :input="input" :upload-queue="uploadQueue" :is-processing="isStreaming"

@@ -1,61 +1,142 @@
 <script setup lang="ts">
-import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { ChatHistory , type SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/vue3';
-import { WhenVisible } from '@inertiajs/vue3';
+import { computed, ref, watch, onUnmounted } from 'vue'
+import { Link, usePage } from '@inertiajs/vue3'
+import { WhenVisible } from '@inertiajs/vue3'
+import { useLocalStorage } from '@vueuse/core'
+import {
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from '@/components/ui/sidebar'
+import type { ChatHistory, SharedData, HistoryItem } from '@/types'
 
-withDefaults(defineProps<{
-    chatHistory: ChatHistory;
-}>(), {
-    'chatHistory': () => ({
-        data: [],
-        current_page: 1,
-        next_page_url: null,
-        path: '',
-        per_page: 25,
-        from: 0,
-        to: 0,
-        total: 0,
-        first_page_url: '',
-        last_page: 1,
-        last_page_url: '',
-        prev_page_url: null,
-        links: []
-    })
-});
+interface Props {
+  chatHistory: ChatHistory
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  chatHistory: () => ({
+    data: [],
+    current_page: 1,
+    next_page_url: null,
+    path: '',
+    per_page: 25,
+    from: 0,
+    to: 0,
+    total: 0,
+    first_page_url: '',
+    last_page: 1,
+    last_page_url: '',
+    prev_page_url: null,
+    links: []
+  })
+})
+
 const page = usePage<SharedData>()
+
+const allChatHistory = useLocalStorage<HistoryItem[]>('prism-chat-history', [...props.chatHistory.data])
+const lastLoadedPage = ref(props.chatHistory.current_page)
+const isInitialized = ref(false)
+
+const hasMorePages = computed(() => props.chatHistory.next_page_url !== null)
+const hasHistoryItems = computed(() => allChatHistory.value.length > 0)
+const nextPageNumber = computed(() => props.chatHistory.current_page + 1)
+
+const isCurrentChat = (chatId: string | number): boolean => {
+  return route('chats.show', chatId, false) === page.url
+}
+
+const handleChatHistoryUpdate = (newChatHistory: ChatHistory) => {
+  if (!isInitialized.value) {
+    allChatHistory.value = [...newChatHistory.data]
+    lastLoadedPage.value = newChatHistory.current_page
+    isInitialized.value = true
+    return
+  }
+
+  if (newChatHistory.current_page > lastLoadedPage.value) {
+    const newItems = newChatHistory.data.filter(
+      item => !allChatHistory.value.some(existing => existing.id === item.id)
+    )
+    allChatHistory.value.push(...newItems)
+    lastLoadedPage.value = newChatHistory.current_page
+  }
+}
+
+const stopWatcher = watch(
+  () => props.chatHistory,
+  handleChatHistoryUpdate,
+  { deep: true, immediate: true }
+)
+
+onUnmounted(() => {
+  stopWatcher()
+})
 </script>
 
 <template>
-    <SidebarGroup class="px-2 py-0" v-if="chatHistory?.data?.length > 0">
-        <SidebarGroupLabel>
-            Chat History
+  <SidebarGroup
+    v-if="hasHistoryItems"
+    class="px-2 py-0"
+    role="navigation"
+    aria-label="Chat History Navigation"
+  >
+    <SidebarGroupLabel>
+      Chat History
+    </SidebarGroupLabel>
+
+    <SidebarMenu>
+      <SidebarMenuItem
+        v-for="historyItem in allChatHistory"
+        :key="`chat-${historyItem.id}`"
+      >
+        <SidebarMenuButton
+          as-child
+          :class="{
+            'bg-secondary text-secondary-foreground': isCurrentChat(historyItem.id)
+          }"
+          :tooltip="historyItem.title"
+        >
+          <Link
+            prefetch
+            :href="route('chats.show', historyItem.id)"
+            :aria-label="`Open chat: ${historyItem.title}`"
+            class="block w-full"
+          >
+            <span class="truncate">{{ historyItem.title }}</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+
+    <WhenVisible
+      v-if="hasMorePages"
+      :params="{
+        preserveUrl: true,
+        data: { page: nextPageNumber },
+        only: ['chatHistory'],
+      }"
+      :always="hasMorePages"
+    >
+      <template #fallback>
+        <SidebarGroupLabel
+          class="mt-2"
+          role="status"
+          aria-live="polite"
+        >
+          <div>Loading more chats...</div>
         </SidebarGroupLabel>
-        <SidebarMenu>
-            <SidebarMenuItem v-for="historyItem in chatHistory.data" :key="historyItem.id">
-                <SidebarMenuButton as-child :class="{ 'bg-secondary text-secondary-foreground': route('chats.show', historyItem.id, false) === page.url }"
-                    :tooltip="historyItem.title">
-                    <Link prefetch :href="route('chats.show', historyItem.id)">
-                    <span>{{ historyItem.title }}</span>
-                    </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-        </SidebarMenu>
-        <WhenVisible :params="{
-            preserveUrl: true,
-            data: {
-                page: chatHistory?.current_page + 1,
-            },
-            only: ['chatHistory'],
-        }" :always="chatHistory.next_page_url !== null">
-            <template #fallback>
-                <SidebarGroupLabel class="mt-2">
-                    <div>Loading...</div>
-                </SidebarGroupLabel>
-            </template>
-        </WhenVisible>
-        <SidebarGroupLabel class="mt-2">
-            You have reached the end of your chat history.
-        </SidebarGroupLabel>
-    </SidebarGroup>
+      </template>
+    </WhenVisible>
+
+    <SidebarGroupLabel
+      v-if="!hasMorePages && hasHistoryItems"
+      class="mt-2 text-muted-foreground"
+      role="status"
+    >
+      You have reached the end of your chat history.
+    </SidebarGroupLabel>
+  </SidebarGroup>
 </template>

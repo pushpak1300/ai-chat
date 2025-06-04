@@ -57,19 +57,5 @@ function handleNewChat() {
       v-if="!isReadonly"
       class="order-1 md:order-3"
     />
-
-    <Button
-      class="bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-50 dark:text-zinc-900 hidden md:flex py-1.5 px-2 h-fit md:h-[34px] order-4 md:ml-auto"
-      as-child
-    >
-      <a
-        href="https://github.com/your-repo"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <Icon icon="lucide:github" />
-        View on GitHub
-      </a>
-    </Button>
   </header>
 </template>

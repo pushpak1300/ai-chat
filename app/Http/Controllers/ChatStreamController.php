@@ -10,7 +10,6 @@ use Prism\Prism\Prism;
 use App\Models\Message;
 use App\Enums\ModelName;
 use Illuminate\Http\Request;
-use Prism\Prism\Enums\Provider;
 use Illuminate\Support\Facades\Response;
 use Prism\Prism\ValueObjects\Messages\UserMessage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -22,7 +21,7 @@ final class ChatStreamController extends Controller
     {
         $userMessage = $request->string('message')->trim()->value();
         $modelId = $request->string('model', ModelName::GEMINI_2_0_FLASH_LITE->value)->trim()->value();
-        
+
         $model = ModelName::tryFrom($modelId) ?? ModelName::GEMINI_2_0_FLASH_LITE;
 
         $messages = $chat->messages()->orderBy('created_at')->get();

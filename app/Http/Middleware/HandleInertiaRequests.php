@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Enums\ModelName;
 use Inertia\Middleware;
+use App\Enums\ModelName;
 use Tighten\Ziggy\Ziggy;
 use Illuminate\Http\Request;
 

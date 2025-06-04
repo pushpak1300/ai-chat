@@ -11,6 +11,17 @@ enum ModelName: string
     case GEMINI_2_0_FLASH_LITE = 'gemini-2.0-flash-lite';
     case GEMINI_2_0_FLASH = 'gemini-2.0-flash';
 
+    /**
+     * Get all models as an array for frontend consumption
+     */
+    public static function getAvailableModels(): array
+    {
+        return array_map(
+            fn (ModelName $model): array => $model->toArray(),
+            self::cases()
+        );
+    }
+
     public function getName(): string
     {
         return match ($this) {
@@ -43,16 +54,5 @@ enum ModelName: string
             'description' => $this->getDescription(),
             'provider' => $this->getProvider()->value,
         ];
-    }
-
-    /**
-     * Get all models as an array for frontend consumption
-     */
-    public static function getAvailableModels(): array
-    {
-        return array_map(
-            fn (ModelName $model) => $model->toArray(),
-            self::cases()
-        );
     }
 }

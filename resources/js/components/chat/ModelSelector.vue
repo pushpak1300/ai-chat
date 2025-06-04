@@ -2,7 +2,7 @@
 import type { Model, SharedData } from '@/types'
 import { Icon } from '@iconify/vue'
 import { usePage } from '@inertiajs/vue3'
-import { useStorage, StorageSerializers } from '@vueuse/core'
+import { useStorage } from '@vueuse/core'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,

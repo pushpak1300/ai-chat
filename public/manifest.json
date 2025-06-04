@@ -1,0 +1,16 @@
+{
+    "name": "AI Chat",
+    "short_name": "AC",
+    "background_color": "#6777ef",
+    "display": "fullscreen",
+    "description": "Ai chat application",
+    "theme_color": "#6777ef",
+    "start_url": "/",
+    "icons": [
+        {
+            "src": "logo.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

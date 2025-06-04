@@ -14,5 +14,5 @@ interface Props {
 </script>
 
 <template>
-  <Icon icon="lucide:message-circle" class="size-5" />
+  <Icon icon="lucide:sparkles" class="size-5" />
 </template>

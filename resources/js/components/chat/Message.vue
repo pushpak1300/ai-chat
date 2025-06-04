@@ -41,7 +41,7 @@ const mode = ref<'view' | 'edit'>('view')
           class="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background"
         >
           <div class="translate-y-px">
-            <Icon icon="lucide:sparkles" class="size-3.5" />
+            <Icon icon="lucide:sparkles" class="size-4" />
           </div>
         </div>
 

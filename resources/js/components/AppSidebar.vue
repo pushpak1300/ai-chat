@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import type { ChatHistory } from '@/types'
-import { Link } from '@inertiajs/vue3'
 import NavMain from '@/components/NavMain.vue'
 import NavUser from '@/components/NavUser.vue'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
 import AppLogo from './AppLogo.vue'
+import { Link } from '@inertiajs/vue3'
 
 defineProps<{
-  chatHistory?: ChatHistory | null
-  chatNextPage?: number | null
+  chatHistory?: ChatHistory
 }>()
 </script>
 
@@ -17,8 +16,8 @@ defineProps<{
     <SidebarHeader>
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton size="lg" as-child>
-            <Link :href="route('chats.index')">
+          <SidebarMenuButton size="lg" as-child class="cursor-default hover:bg-transparent focus:bg-transparent pointer-events-none">
+            <Link :disabled="true" :href="route('chats.index')">
               <AppLogo />
             </Link>
           </SidebarMenuButton>
@@ -27,7 +26,7 @@ defineProps<{
     </SidebarHeader>
 
     <SidebarContent>
-      <NavMain :chat-history="chatHistory" :chat-next-page="chatNextPage" />
+      <NavMain :chat-history="chatHistory" />
     </SidebarContent>
 
     <SidebarFooter>

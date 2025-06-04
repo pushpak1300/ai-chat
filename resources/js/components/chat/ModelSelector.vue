@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import type { Model } from '@/constants/models'
+import type { Model } from '@/types'
 import { Icon } from '@iconify/vue'
 import { useStorage } from '@vueuse/core'
-import { usePage } from '@inertiajs/vue3'
-import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -13,9 +11,11 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { MODEL_KEY } from '@/constants/models'
 
-const page = usePage()
-const availableModels = computed(() => page.props.availableModels as Model[])
-const selectedModel = useStorage<Model>(MODEL_KEY, availableModels.value[0])
+defineProps<{
+  availableModels: Model[]
+}>()
+
+const selectedModel = useStorage<Model>(MODEL_KEY, props.availableModels[0])
 
 function selectModel(model: Model) {
   selectedModel.value = model

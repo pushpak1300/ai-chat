@@ -23,7 +23,6 @@ final class ChatStreamController extends Controller
         $userMessage = $request->string('message')->trim()->value();
         $modelId = $request->string('model', ModelName::GEMINI_2_0_FLASH_LITE->value)->trim()->value();
         
-        // Get the model enum from the ID
         $model = ModelName::tryFrom($modelId) ?? ModelName::GEMINI_2_0_FLASH_LITE;
 
         $messages = $chat->messages()->orderBy('created_at')->get();

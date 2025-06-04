@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import type { Model } from '@/constants/models'
-import type { BreadcrumbItemType, ChatHistory } from '@/types'
-import { Head, router, usePage } from '@inertiajs/vue3'
+import type { BreadcrumbItemType, ChatHistory, Model } from '@/types'
+import { Head, router } from '@inertiajs/vue3'
 import { useStorage } from '@vueuse/core'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import ChatContainer from '@/components/chat/ChatContainer.vue'
 import { provideVisibility } from '@/composables/useVisibility'
 import { MODEL_KEY } from '@/constants/models'
@@ -12,10 +11,8 @@ import { Visibility } from '@/types/enum'
 
 defineProps<{
   chatHistory: ChatHistory
+  availableModels: Model[]
 }>()
-
-const page = usePage()
-const availableModels = computed(() => page.props.availableModels as Model[])
 
 const breadcrumbs: BreadcrumbItemType[] = [
   {
@@ -32,10 +29,7 @@ interface ChatCreateParams {
 
 const input = ref<string>('')
 const initialVisibilityType = ref<Visibility>(Visibility.PRIVATE)
-const selectedModel = useStorage<Model>(
-  MODEL_KEY,
-  availableModels.value.find((m): boolean => m.id === 'gemini-2.0-flash-lite') ?? availableModels.value[0],
-)
+const selectedModel = useStorage<Model>(MODEL_KEY, props.availableModels[0])
 
 provideVisibility(Visibility.PRIVATE, initialVisibilityType)
 

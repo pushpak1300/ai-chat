@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import type { Model } from '@/constants/models'
-import type { BreadcrumbItemType, Chat, ChatHistory, Message } from '@/types'
-import { Head, router, usePage } from '@inertiajs/vue3'
+import type { BreadcrumbItemType, Chat, ChatHistory, Message, Model } from '@/types'
+import { Head, router } from '@inertiajs/vue3'
 import { useStream } from '@laravel/stream-vue'
 import { useStorage } from '@vueuse/core'
 import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
@@ -14,10 +13,8 @@ import { Role, Visibility } from '@/types/enum'
 const props = defineProps<{
   chatHistory: ChatHistory
   chat: Chat
+  availableModels: Model[]
 }>()
-
-const page = usePage()
-const availableModels = computed(() => page.props.availableModels as Model[])
 
 const pageTitle = computed<string>(() => props.chat?.title || 'Chat')
 const initialVisibility = computed<Visibility>(() => props.chat?.visibility || Visibility.PRIVATE)

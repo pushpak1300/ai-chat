@@ -35,21 +35,6 @@ enum ModelName: string
         };
     }
 
-    public function getProviderName(): string
-    {
-        return match ($this->getProvider()) {
-            Provider::Gemini => 'Google Gemini',
-            Provider::OpenAI => 'OpenAI',
-            Provider::Anthropic => 'Anthropic',
-            Provider::Ollama => 'Ollama',
-            Provider::Groq => 'Groq',
-            Provider::Mistral => 'Mistral',
-            Provider::DeepSeek => 'DeepSeek',
-            Provider::XAI => 'xAI',
-            default => 'Unknown Provider',
-        };
-    }
-
     public function toArray(): array
     {
         return [
@@ -57,7 +42,6 @@ enum ModelName: string
             'name' => $this->getName(),
             'description' => $this->getDescription(),
             'provider' => $this->getProvider()->value,
-            'providerName' => $this->getProviderName(),
         ];
     }
 

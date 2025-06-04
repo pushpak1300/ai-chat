@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type { Model } from '@/constants/models'
 import type { BreadcrumbItemType, Chat, ChatHistory, Message } from '@/types'
-import { Head, router } from '@inertiajs/vue3'
+import { Head, router, usePage } from '@inertiajs/vue3'
 import { useStream } from '@laravel/stream-vue'
 import { useStorage } from '@vueuse/core'
 import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
 import ChatContainer from '@/components/chat/ChatContainer.vue'
 import { provideVisibility } from '@/composables/useVisibility'
-import { AVAILABLE_MODELS, MODEL_KEY } from '@/constants/models'
+import { MODEL_KEY } from '@/constants/models'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Role, Visibility } from '@/types/enum'
 
@@ -15,6 +15,9 @@ const props = defineProps<{
   chatHistory: ChatHistory
   chat: Chat
 }>()
+
+const page = usePage()
+const availableModels = computed(() => page.props.availableModels as Model[])
 
 const pageTitle = computed<string>(() => props.chat?.title || 'Chat')
 const initialVisibility = computed<Visibility>(() => props.chat?.visibility || Visibility.PRIVATE)
@@ -33,7 +36,7 @@ interface StreamParams {
 }
 
 const initialVisibilityType = ref<Visibility>(initialVisibility.value)
-const selectedModel = useStorage<Model>(MODEL_KEY, AVAILABLE_MODELS[0])
+const selectedModel = useStorage<Model>(MODEL_KEY, availableModels.value[0])
 const messages = ref<Message[]>([...(props.chat?.messages || [])])
 const input = ref<string>('')
 const votes = ref<Record<string, unknown>[]>([])

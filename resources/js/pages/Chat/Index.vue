@@ -1,18 +1,21 @@
 <script setup lang="ts">
 import type { Model } from '@/constants/models'
 import type { BreadcrumbItemType, ChatHistory } from '@/types'
-import { Head, router } from '@inertiajs/vue3'
+import { Head, router, usePage } from '@inertiajs/vue3'
 import { useStorage } from '@vueuse/core'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import ChatContainer from '@/components/chat/ChatContainer.vue'
 import { provideVisibility } from '@/composables/useVisibility'
-import { AVAILABLE_MODELS, MODEL_KEY } from '@/constants/models'
+import { MODEL_KEY } from '@/constants/models'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Visibility } from '@/types/enum'
 
 defineProps<{
   chatHistory: ChatHistory
 }>()
+
+const page = usePage()
+const availableModels = computed(() => page.props.availableModels as Model[])
 
 const breadcrumbs: BreadcrumbItemType[] = [
   {
@@ -31,7 +34,7 @@ const input = ref<string>('')
 const initialVisibilityType = ref<Visibility>(Visibility.PRIVATE)
 const selectedModel = useStorage<Model>(
   MODEL_KEY,
-  AVAILABLE_MODELS.find((m): boolean => m.id === 'gemini-2.0-flash-lite') ?? AVAILABLE_MODELS[0],
+  availableModels.value.find((m): boolean => m.id === 'gemini-2.0-flash-lite') ?? availableModels.value[0],
 )
 
 provideVisibility(Visibility.PRIVATE, initialVisibilityType)

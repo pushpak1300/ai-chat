@@ -2,6 +2,8 @@
 import type { Model } from '@/constants/models'
 import { Icon } from '@iconify/vue'
 import { useStorage } from '@vueuse/core'
+import { usePage } from '@inertiajs/vue3'
+import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -9,9 +11,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { AVAILABLE_MODELS, MODEL_KEY } from '@/constants/models'
+import { MODEL_KEY } from '@/constants/models'
 
-const selectedModel = useStorage<Model>(MODEL_KEY, AVAILABLE_MODELS[0])
+const page = usePage()
+const availableModels = computed(() => page.props.availableModels as Model[])
+const selectedModel = useStorage<Model>(MODEL_KEY, availableModels.value[0])
 
 function selectModel(model: Model) {
   selectedModel.value = model
@@ -32,7 +36,7 @@ function selectModel(model: Model) {
     </DropdownMenuTrigger>
     <DropdownMenuContent align="start" class="min-w-[300px]">
       <DropdownMenuItem
-        v-for="model in AVAILABLE_MODELS"
+        v-for="model in availableModels"
         :key="model.id"
         :data-testid="`model-selector-item-${model.id}`"
         @select="selectModel(model)"

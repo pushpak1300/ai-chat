@@ -33,7 +33,7 @@ interface StreamParams {
 }
 
 const initialVisibilityType = ref<Visibility>(initialVisibility.value)
-const selectedModel = useStorage<Model>(MODEL_KEY, availableModels.value[0])
+const selectedModel = useStorage<Model>(MODEL_KEY, props.availableModels[0])
 const messages = ref<Message[]>([...(props.chat?.messages || [])])
 const input = ref<string>('')
 const votes = ref<Record<string, unknown>[]>([])

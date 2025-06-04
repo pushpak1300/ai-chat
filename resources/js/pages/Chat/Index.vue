@@ -9,7 +9,7 @@ import { MODEL_KEY } from '@/constants/models'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Visibility } from '@/types/enum'
 
-defineProps<{
+const props = defineProps<{
   chatHistory: ChatHistory
   availableModels: Model[]
 }>()

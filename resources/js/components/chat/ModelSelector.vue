@@ -42,7 +42,12 @@ function selectModel(model: Model) {
         @select="selectModel(model)"
       >
         <div class="flex flex-col gap-1 items-start">
-          <div>{{ model.name }}</div>
+          <div class="flex items-center gap-2">
+            <span>{{ model.name }}</span>
+            <span class="text-xs px-2 py-0.5 bg-muted rounded-full text-muted-foreground">
+              {{ model.providerName }}
+            </span>
+          </div>
           <div class="text-xs text-muted-foreground">
             {{ model.description }}
           </div>

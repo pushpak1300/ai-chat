@@ -21,7 +21,10 @@ final class ChatStreamController extends Controller
     public function __invoke(Request $request, Chat $chat): StreamedResponse
     {
         $userMessage = $request->string('message')->trim()->value();
-        $model = $request->string('model', ModelName::GEMINI_2_0_FLASH_LITE->value)->trim()->value();
+        $modelId = $request->string('model', ModelName::GEMINI_2_0_FLASH_LITE->value)->trim()->value();
+        
+        // Get the model enum from the ID
+        $model = ModelName::tryFrom($modelId) ?? ModelName::GEMINI_2_0_FLASH_LITE;
 
         $messages = $chat->messages()->orderBy('created_at')->get();
         $messages->map(fn (Message $message): UserMessage|AssistantMessage => match ($message->role) {
@@ -33,7 +36,7 @@ final class ChatStreamController extends Controller
             $finalResponse = '';
             $stream = Prism::text()
                 ->withSystemPrompt(view('prompts.system'))
-                ->using(Provider::Gemini, $model)
+                ->using($model->getProvider(), $model->value)
                 ->withPrompt($userMessage)
                 ->asStream();
 

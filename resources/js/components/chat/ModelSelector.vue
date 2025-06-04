@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Model } from '@/constants/models'
+import type { Model } from '@/types'
 import { Icon } from '@iconify/vue'
 import { useStorage } from '@vueuse/core'
 import { Button } from '@/components/ui/button'
@@ -9,9 +9,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { AVAILABLE_MODELS, MODEL_KEY } from '@/constants/models'
+import { MODEL_KEY } from '@/constants/models'
 
-const selectedModel = useStorage<Model>(MODEL_KEY, AVAILABLE_MODELS[0])
+defineProps<{
+  availableModels: Model[]
+}>()
+
+const selectedModel = useStorage<Model>(MODEL_KEY, props.availableModels[0])
 
 function selectModel(model: Model) {
   selectedModel.value = model
@@ -32,13 +36,18 @@ function selectModel(model: Model) {
     </DropdownMenuTrigger>
     <DropdownMenuContent align="start" class="min-w-[300px]">
       <DropdownMenuItem
-        v-for="model in AVAILABLE_MODELS"
+        v-for="model in availableModels"
         :key="model.id"
         :data-testid="`model-selector-item-${model.id}`"
         @select="selectModel(model)"
       >
         <div class="flex flex-col gap-1 items-start">
-          <div>{{ model.name }}</div>
+          <div class="flex items-center gap-2">
+            <span>{{ model.name }}</span>
+            <span class="text-xs px-2 py-0.5 bg-muted rounded-full text-muted-foreground">
+              {{ model.providerName }}
+            </span>
+          </div>
           <div class="text-xs text-muted-foreground">
             {{ model.description }}
           </div>

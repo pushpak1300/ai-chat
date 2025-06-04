@@ -93,3 +93,10 @@ export interface Chat {
   updated_at: string
   messages?: Message[]
 }
+
+export interface Model {
+  id: string
+  name: string
+  description: string
+  provider: string
+}

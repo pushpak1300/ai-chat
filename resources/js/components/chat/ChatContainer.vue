@@ -6,7 +6,6 @@ import MultimodalInput from '@/components/chat/MultimodalInput.vue'
 
 withDefaults(defineProps<{
   messages?: Array<Message>
-  input?: string
   streamId?: string
   attachments?: Array<string>
   votes?: Array<Record<string, any>>
@@ -14,7 +13,6 @@ withDefaults(defineProps<{
   chatId?: string
 }>(), {
   messages: () => [],
-  input: '',
   streamId: '',
   attachments: () => [],
   votes: () => [],
@@ -23,11 +21,11 @@ withDefaults(defineProps<{
 })
 
 defineEmits<{
-  setInput: [value: string]
   append: [message: string]
   stop: []
   handleSubmit: []
 }>()
+
 const isAtBottom = ref(false)
 const messagesRef = ref<InstanceType<typeof Messages>>()
 
@@ -52,13 +50,11 @@ function handleScrollToBottom() {
 
     <div class="flex-shrink-0 mx-auto w-full max-w-3xl px-2 sm:px-4 pb-2 sm:pb-4">
       <MultimodalInput
-        :input="input"
         :chat-id="chatId"
         :stream-id="streamId"
         :attachments="attachments"
         :messages="messages"
         :is-at-bottom="isAtBottom"
-        @set-input="$emit('setInput', $event)"
         @append="$emit('append', $event)"
         @stop="$emit('stop')"
         @handle-submit="$emit('handleSubmit')"

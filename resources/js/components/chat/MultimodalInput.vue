@@ -10,9 +10,9 @@ import StopButton from '@/components/chat/StopButton.vue'
 import SuggestedActions from '@/components/chat/SuggestedActions.vue'
 import Button from '@/components/ui/button/Button.vue'
 import Textarea from '@/components/ui/textarea/Textarea.vue'
+import { useChatInput } from '@/composables/useChatInput'
 
 const props = defineProps<{
-  input: string
   chatId?: string
   streamId?: string
   attachments: Array<string>
@@ -21,13 +21,13 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  setInput: [value: string]
   append: [message: string]
   stop: []
   handleSubmit: []
   scrollToBottom: []
 }>()
 
+const { input } = useChatInput()
 const { isFetching, isStreaming } = useStream(`stream/${props.chatId}`, { id: props.streamId })
 
 const textareaRef = ref<HTMLTextAreaElement>()
@@ -45,12 +45,6 @@ function adjustHeight() {
       textareaRef.value.style.height = `${textareaRef.value.scrollHeight + 2}px`
     }
   }, 10)
-}
-
-function handleInput(value: string | number) {
-  const stringValue = String(value)
-  emit('setInput', stringValue)
-  nextTick(() => adjustHeight())
 }
 
 function handleKeyDown(event: KeyboardEvent) {
@@ -81,7 +75,7 @@ function scrollToBottom() {
   emit('scrollToBottom')
 }
 
-watch(() => props.input, () => {
+watch(input, () => {
   nextTick(() => adjustHeight())
 }, { immediate: true })
 
@@ -125,14 +119,16 @@ watch(() => isStreaming.value, (newValue, oldValue) => {
     </div>
 
     <Textarea
-      ref="textareaRef" data-testid="multimodal-input" placeholder="Send a message..." :model-value="input"
-      class="min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700" rows="2" @update:model-value="handleInput" @keydown="handleKeyDown"
+      ref="textareaRef" v-model="input" data-testid="multimodal-input" placeholder="Send a message..."
+      class="min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700" rows="2" @keydown="handleKeyDown"
     />
 
     <div class="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
       <StopButton v-if="isStreaming" @stop="$emit('stop')" />
       <SendButton
-        v-else :input="input" :upload-queue="uploadQueue" :is-processing="isStreaming"
+        v-else
+        :upload-queue="uploadQueue"
+        :is-processing="isStreaming"
         @submit="submitForm"
       />
     </div>

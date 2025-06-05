@@ -3,21 +3,23 @@ import { Icon } from '@iconify/vue'
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useChatInput } from '@/composables/useChatInput'
 
-interface Props {
-  input: string
+const props = withDefaults(defineProps<{
   uploadQueue: Array<string>
   isProcessing?: boolean
-}
-
-const props = defineProps<Props>()
+}>(), {
+  isProcessing: false,
+})
 
 defineEmits<{
   submit: []
 }>()
 
+const { input } = useChatInput()
+
 const canSend = computed(() => {
-  return props.input.trim().length > 0 && !props.isProcessing
+  return input.value.trim().length > 0 && !props.isProcessing
 })
 </script>
 

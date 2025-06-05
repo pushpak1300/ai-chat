@@ -22,7 +22,13 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: '8.3'
+          tools: composer:v2
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: '1.1.25'
 
       - name: Install Dependencies
         run: |
@@ -32,8 +38,5 @@ jobs:
       - name: Format Backend
         run: composer run format
 
-      - name: Format Frontend
-        run: npm run format
-
       - name: Lint Frontend
-        run: npm run lint
+        run: bun run lint:fix

@@ -4,6 +4,7 @@ import { Head, router } from '@inertiajs/vue3'
 import { useStorage } from '@vueuse/core'
 import { ref } from 'vue'
 import ChatContainer from '@/components/chat/ChatContainer.vue'
+import { provideChatInput } from '@/composables/useChatInput'
 import { provideVisibility } from '@/composables/useVisibility'
 import { MODEL_KEY } from '@/constants/models'
 import AppLayout from '@/layouts/AppLayout.vue'
@@ -27,15 +28,11 @@ interface ChatCreateParams {
   visibility: Visibility
 }
 
-const input = ref<string>('')
+const { input } = provideChatInput()
 const initialVisibilityType = ref<Visibility>(Visibility.PRIVATE)
 const selectedModel = useStorage<Model>(MODEL_KEY, props.availableModels[0])
 
 provideVisibility(Visibility.PRIVATE, initialVisibilityType)
-
-function setInput(value: string): void {
-  input.value = value
-}
 
 function sendInitialMessage(userMessage: string): void {
   const params: ChatCreateParams = {
@@ -44,7 +41,7 @@ function sendInitialMessage(userMessage: string): void {
     visibility: initialVisibilityType.value,
   }
 
-  router.post(route('chats.store'), params)
+  router.post(route('chats.store'), params as Record<string, any>)
 }
 
 function handleSubmit(): void {
@@ -55,6 +52,7 @@ function handleSubmit(): void {
 }
 
 function append(message: string): void {
+  input.value = message
   sendInitialMessage(message)
 }
 </script>
@@ -64,8 +62,6 @@ function append(message: string): void {
   <AppLayout :breadcrumbs="breadcrumbs" :chat-history="chatHistory">
     <div class="h-[calc(100vh-4rem)] bg-background">
       <ChatContainer
-        :input="input"
-        @set-input="setInput"
         @handle-submit="handleSubmit"
         @append="append"
       />

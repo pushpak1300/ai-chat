@@ -3,16 +3,16 @@ import type { Message } from '@/types'
 import { Icon } from '@iconify/vue'
 import { useStream } from '@laravel/stream-vue'
 import { AnimatePresence } from 'motion-v'
-import { nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import PreviewAttachment from '@/components/chat/PreviewAttachment.vue'
 import SendButton from '@/components/chat/SendButton.vue'
 import StopButton from '@/components/chat/StopButton.vue'
 import SuggestedActions from '@/components/chat/SuggestedActions.vue'
 import Button from '@/components/ui/button/Button.vue'
 import Textarea from '@/components/ui/textarea/Textarea.vue'
+import { useChatInput } from '@/composables/useChatInput'
 
 const props = defineProps<{
-  input: string
   chatId?: string
   streamId?: string
   attachments: Array<string>
@@ -21,17 +21,19 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  setInput: [value: string]
   append: [message: string]
   stop: []
   handleSubmit: []
   scrollToBottom: []
 }>()
 
+const { input } = useChatInput()
 const { isFetching, isStreaming } = useStream(`stream/${props.chatId}`, { id: props.streamId })
 
 const textareaRef = ref<HTMLTextAreaElement>()
 const uploadQueue = ref<Array<string>>([])
+
+const canSendMessage = computed(() => !isFetching.value && !isStreaming.value)
 
 let adjustHeightTimeout: ReturnType<typeof setTimeout> | null = null
 
@@ -47,12 +49,6 @@ function adjustHeight() {
   }, 10)
 }
 
-function handleInput(value: string | number) {
-  const stringValue = String(value)
-  emit('setInput', stringValue)
-  nextTick(() => adjustHeight())
-}
-
 function handleKeyDown(event: KeyboardEvent) {
   if (
     event.key === 'Enter'
@@ -61,7 +57,7 @@ function handleKeyDown(event: KeyboardEvent) {
   ) {
     event.preventDefault()
 
-    if (isFetching.value || isStreaming.value) {
+    if (!canSendMessage.value) {
       event.preventDefault()
     }
     else {
@@ -71,6 +67,10 @@ function handleKeyDown(event: KeyboardEvent) {
 }
 
 function submitForm() {
+  if (!canSendMessage.value) {
+    return
+  }
+
   emit('handleSubmit')
   nextTick(() => {
     emit('scrollToBottom')
@@ -81,7 +81,7 @@ function scrollToBottom() {
   emit('scrollToBottom')
 }
 
-watch(() => props.input, () => {
+watch(input, () => {
   nextTick(() => adjustHeight())
 }, { immediate: true })
 
@@ -125,14 +125,23 @@ watch(() => isStreaming.value, (newValue, oldValue) => {
     </div>
 
     <Textarea
-      ref="textareaRef" data-testid="multimodal-input" placeholder="Send a message..." :model-value="input"
-      class="min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700" rows="2" @update:model-value="handleInput" @keydown="handleKeyDown"
+      ref="textareaRef"
+      :model-value="input"
+      data-testid="multimodal-input"
+      placeholder="Send a message..."
+      :disabled="!canSendMessage"
+      class="min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
+      rows="2"
+      @update:model-value="input = $event"
+      @keydown="handleKeyDown"
     />
 
     <div class="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
       <StopButton v-if="isStreaming" @stop="$emit('stop')" />
       <SendButton
-        v-else :input="input" :upload-queue="uploadQueue" :is-processing="isStreaming"
+        v-else
+        :upload-queue="uploadQueue"
+        :is-processing="!canSendMessage"
         @submit="submitForm"
       />
     </div>

@@ -52,12 +52,14 @@ const page = usePage<SharedData>()
         <SidebarMenuItem>
           <SidebarMenuButton
             v-for="item in mainMenuItems" :key="item.label"
-            class="flex items-center font-bold" :as="Link" :href="item.href" :aria-label="item.label" :target="item.target" :external="item.external"
+            class="flex items-center font-bold"
           >
-            <Icon :icon="item.icon" class="w-4 h-4" />
-            <span class="ml-2">
-              {{ item.label }}
-            </span>
+            <a :href="item.href" :target="item.target" :aria-label="item.label" class="flex items-center">
+              <Icon :icon="item.icon" class="w-4 h-4" />
+              <span class="ml-2">
+                {{ item.label }}
+              </span>
+            </a>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
@@ -74,7 +76,7 @@ const page = usePage<SharedData>()
               }" :tooltip="historyItem.title"
             >
               <Link
-                :prefetch="['mount', 'hover']" cache-for="1m" :href="route('chats.show', historyItem.id)"
+                :prefetch="['mount']" :cache-for="['30s', '1m']" :href="route('chats.show', historyItem.id)"
                 :aria-label="`Open chat: ${historyItem.title}`" class="block w-full"
               >
                 <span class="truncate">{{ historyItem.title }}</span>
@@ -87,14 +89,18 @@ const page = usePage<SharedData>()
       <SidebarGroup v-if="groupedChatHistory.yesterday.length > 0" class="px-2 py-0">
         <SidebarGroupLabel>Yesterday</SidebarGroupLabel>
         <SidebarMenu>
-          <SidebarMenuItem v-for="historyItem in groupedChatHistory.yesterday" :key="`chat-${historyItem.id}`">
+          <SidebarMenuItem
+            v-for="historyItem in groupedChatHistory.yesterday"
+            :key="`chat-${historyItem.id}`"
+          >
             <SidebarMenuButton
               as-child :class="{
                 'bg-secondary text-secondary-foreground': route('chats.show', historyItem.id, false) === page.url,
               }" :tooltip="historyItem.title"
             >
               <Link
-                :prefetch="['mount', 'hover']" cache-for="1m" :href="route('chats.show', historyItem.id)"
+                :prefetch="['mount', 'hover']" cache-for="1m"
+                :href="route('chats.show', historyItem.id)"
                 :aria-label="`Open chat: ${historyItem.title}`" class="block w-full"
               >
                 <span class="truncate">{{ historyItem.title }}</span>
@@ -107,14 +113,18 @@ const page = usePage<SharedData>()
       <SidebarGroup v-if="groupedChatHistory.lastSevenDays.length > 0" class="px-2 py-0">
         <SidebarGroupLabel>Last 7 Days</SidebarGroupLabel>
         <SidebarMenu>
-          <SidebarMenuItem v-for="historyItem in groupedChatHistory.lastSevenDays" :key="`chat-${historyItem.id}`">
+          <SidebarMenuItem
+            v-for="historyItem in groupedChatHistory.lastSevenDays"
+            :key="`chat-${historyItem.id}`"
+          >
             <SidebarMenuButton
               as-child :class="{
                 'bg-secondary text-secondary-foreground': route('chats.show', historyItem.id, false) === page.url,
               }" :tooltip="historyItem.title"
             >
               <Link
-                :prefetch="['mount', 'hover']" cache-for="1m" :href="route('chats.show', historyItem.id)"
+                :prefetch="['mount', 'hover']" cache-for="1m"
+                :href="route('chats.show', historyItem.id)"
                 :aria-label="`Open chat: ${historyItem.title}`" class="block w-full"
               >
                 <span class="truncate">{{ historyItem.title }}</span>
@@ -127,14 +137,18 @@ const page = usePage<SharedData>()
       <SidebarGroup v-if="groupedChatHistory.lastThirtyDays.length > 0" class="px-2 py-0">
         <SidebarGroupLabel>Last 30 Days</SidebarGroupLabel>
         <SidebarMenu>
-          <SidebarMenuItem v-for="historyItem in groupedChatHistory.lastThirtyDays" :key="`chat-${historyItem.id}`">
+          <SidebarMenuItem
+            v-for="historyItem in groupedChatHistory.lastThirtyDays"
+            :key="`chat-${historyItem.id}`"
+          >
             <SidebarMenuButton
               as-child :class="{
                 'bg-secondary text-secondary-foreground': route('chats.show', historyItem.id, false) === page.url,
               }" :tooltip="historyItem.title"
             >
               <Link
-                :prefetch="['mount', 'hover']" cache-for="1m" :href="route('chats.show', historyItem.id)"
+                :prefetch="['mount', 'hover']" cache-for="1m"
+                :href="route('chats.show', historyItem.id)"
                 :aria-label="`Open chat: ${historyItem.title}`" class="block w-full"
               >
                 <span class="truncate">{{ historyItem.title }}</span>
@@ -154,7 +168,8 @@ const page = usePage<SharedData>()
               }" :tooltip="historyItem.title"
             >
               <Link
-                :prefetch="['mount', 'hover']" cache-for="1m" :href="route('chats.show', historyItem.id)"
+                :prefetch="['mount', 'hover']" cache-for="1m"
+                :href="route('chats.show', historyItem.id)"
                 :aria-label="`Open chat: ${historyItem.title}`" class="block w-full"
               >
                 <span class="truncate">{{ historyItem.title }}</span>

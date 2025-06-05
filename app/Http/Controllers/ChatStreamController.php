@@ -10,10 +10,10 @@ use App\Models\Chat;
 use Prism\Prism\Prism;
 use App\Models\Message;
 use App\Enums\ModelName;
-use Illuminate\Support\Facades\Response;
-use App\Http\Requests\ChatStreamRequest;
-use Illuminate\Support\Facades\Log;
 use Prism\Prism\Enums\ChunkType;
+use Illuminate\Support\Facades\Log;
+use App\Http\Requests\ChatStreamRequest;
+use Illuminate\Support\Facades\Response;
 use Prism\Prism\ValueObjects\Messages\UserMessage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Prism\Prism\ValueObjects\Messages\AssistantMessage;
@@ -47,7 +47,8 @@ final class ChatStreamController extends Controller
                         yield $chunk->text;
                     }
                 }
-                if ($assistantContent) {
+
+                if ($assistantContent !== '' && $assistantContent !== '0') {
                     $chat->messages()->create([
                         'role' => 'assistant',
                         'parts' => $assistantContent,
@@ -56,9 +57,9 @@ final class ChatStreamController extends Controller
                     $chat->touch();
                 }
 
-            } catch (Throwable $e) {
-                Log::error("Chat stream error for chat {$chat->id}: " . $e->getMessage());
-                yield "data: " . json_encode(['error' => 'Stream failed']) . "\n\n";
+            } catch (Throwable $throwable) {
+                Log::error("Chat stream error for chat {$chat->id}: ".$throwable->getMessage());
+                yield 'data: '.json_encode(['error' => 'Stream failed'])."\n\n";
             }
         });
     }
@@ -68,7 +69,7 @@ final class ChatStreamController extends Controller
         return $chat->messages()
             ->orderBy('created_at')
             ->get()
-            ->map(fn(Message $message) => match ($message->role) {
+            ->map(fn (Message $message): \Prism\Prism\ValueObjects\Messages\UserMessage|\Prism\Prism\ValueObjects\Messages\AssistantMessage => match ($message->role) {
                 'user' => new UserMessage(content: $message->parts),
                 'assistant' => new AssistantMessage(content: $message->parts),
             })

@@ -5,7 +5,9 @@ declare(strict_types=1);
 use App\Models\Chat;
 use App\Models\User;
 use Prism\Prism\Prism;
+use Illuminate\Support\Facades\Log;
 use Prism\Prism\Enums\FinishReason;
+use Illuminate\Support\Facades\View;
 use Prism\Prism\Testing\TextResponseFake;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -62,6 +64,24 @@ describe('ChatStreamController', function (): void {
         expect($assistantMessage->parts)->toBe('I understand your question.');
     });
 
+    it('trims whitespace from user message', function (): void {
+        Prism::fake([
+            TextResponseFake::make()
+                ->withText('Response')
+                ->withFinishReason(FinishReason::Stop),
+        ]);
+
+        $response = $this->post(route('chat.stream', $this->chat), [
+            'message' => '  Hello with spaces  ',
+            'model' => 'gemini-2.0-flash',
+        ]);
+
+        $response->assertOk();
+
+        $userMessage = $this->chat->messages()->where('role', 'user')->latest()->first();
+        expect($userMessage->parts)->toBe('Hello with spaces');
+    });
+
     it('updates chat timestamp', function (): void {
         $originalUpdatedAt = $this->chat->updated_at;
 
@@ -94,7 +114,7 @@ describe('ChatStreamController', function (): void {
 
         $response = $this->post(route('chat.stream', $this->chat), [
             'message' => 'Test',
-            'model' => 'gemini-1.5-pro',
+            'model' => 'gemini-2.0-flash',
         ]);
 
         $response->assertOk();
@@ -118,7 +138,7 @@ describe('ChatStreamController', function (): void {
         $response->assertStreamedContent('This is a longer response that will be chunked');
     });
 
-    it('defaults to gemini-2.0-flash model when not specified', function (): void {
+    it('defaults to gemini-2.0-flash-lite model when not specified', function (): void {
         Prism::fake([
             TextResponseFake::make()
                 ->withText('Default model response')
@@ -135,7 +155,6 @@ describe('ChatStreamController', function (): void {
     });
 
     it('preserves existing chat messages during streaming', function (): void {
-        // Create some existing messages
         $this->chat->messages()->create([
             'role' => 'user',
             'parts' => 'Previous user message',
@@ -170,6 +189,40 @@ describe('ChatStreamController', function (): void {
         expect($messages[3]->parts)->toBe('New response');
     });
 
+    it('builds conversation history correctly', function (): void {
+        $this->chat->messages()->create([
+            'role' => 'user',
+            'parts' => 'First user message',
+            'attachments' => '[]',
+        ]);
+        $this->chat->messages()->create([
+            'role' => 'assistant',
+            'parts' => 'First assistant response',
+            'attachments' => '[]',
+        ]);
+        $this->chat->messages()->create([
+            'role' => 'user',
+            'parts' => 'Second user message',
+            'attachments' => '[]',
+        ]);
+
+        Prism::fake([
+            TextResponseFake::make()
+                ->withText('Final response')
+                ->withFinishReason(FinishReason::Stop),
+        ]);
+
+        $response = $this->post(route('chat.stream', $this->chat), [
+            'message' => 'New message',
+        ]);
+
+        $response->assertOk();
+        $response->assertStreamed();
+        $response->assertStreamedContent('Final response');
+
+        expect($this->chat->messages()->count())->toBe(5);
+    });
+
     it('handles error finish reason and ends stream correctly', function (): void {
         Prism::fake([
             TextResponseFake::make()
@@ -190,5 +243,171 @@ describe('ChatStreamController', function (): void {
 
         expect($userMessage->parts)->toBe('This will cause an error');
         expect($assistantMessage->parts)->toBe('Partial response before error');
+    });
+
+    it('handles exceptions during streaming and logs errors', function (): void {
+        Prism::fake([
+            TextResponseFake::make()
+                ->withFinishReason(FinishReason::Error),
+        ]);
+
+        $response = $this->post(route('chat.stream', $this->chat), [
+            'message' => 'This will throw an exception',
+        ]);
+
+        $response->assertOk();
+        $response->assertStreamed();
+
+        $userMessage = $this->chat->messages()->where('role', 'user')->latest()->first();
+        expect($userMessage->parts)->toBe('This will throw an exception');
+
+        $assistantMessages = $this->chat->messages()->where('role', 'assistant');
+        expect($assistantMessages->count())->toBe(0);
+    });
+
+    it('does not save assistant message when content is empty', function (): void {
+        Prism::fake([
+            TextResponseFake::make()
+                ->withText('')
+                ->withFinishReason(FinishReason::Stop),
+        ]);
+
+        $initialMessageCount = $this->chat->messages()->count();
+
+        $response = $this->post(route('chat.stream', $this->chat), [
+            'message' => 'Test message',
+        ]);
+
+        $response->assertOk();
+        $response->assertStreamed();
+
+        expect($this->chat->messages()->count())->toBe($initialMessageCount + 1);
+
+        $userMessage = $this->chat->messages()->where('role', 'user')->latest()->first();
+        expect($userMessage->parts)->toBe('Test message');
+
+        $assistantMessages = $this->chat->messages()->where('role', 'assistant');
+        expect($assistantMessages->count())->toBe(0);
+    });
+
+    it('does not save assistant message when content is zero string', function (): void {
+        Prism::fake([
+            TextResponseFake::make()
+                ->withText('0')
+                ->withFinishReason(FinishReason::Stop),
+        ]);
+
+        $initialMessageCount = $this->chat->messages()->count();
+
+        $response = $this->post(route('chat.stream', $this->chat), [
+            'message' => 'Test message',
+        ]);
+
+        $response->assertOk();
+        $response->assertStreamed();
+        $response->assertStreamedContent('0');
+
+        expect($this->chat->messages()->count())->toBe($initialMessageCount + 1);
+
+        $userMessage = $this->chat->messages()->where('role', 'user')->latest()->first();
+        expect($userMessage->parts)->toBe('Test message');
+
+        $assistantMessages = $this->chat->messages()->where('role', 'assistant');
+        expect($assistantMessages->count())->toBe(0);
+    });
+
+    it('uses system prompt from view', function (): void {
+        Prism::fake([
+            TextResponseFake::make()
+                ->withText('Response with system prompt')
+                ->withFinishReason(FinishReason::Stop),
+        ]);
+
+        $response = $this->post(route('chat.stream', $this->chat), [
+            'message' => 'Test',
+        ]);
+
+        $response->assertOk();
+        $response->assertStreamed();
+        $response->assertStreamedContent('Response with system prompt');
+    });
+
+    it('sets correct message attributes when creating user message', function (): void {
+        Prism::fake([
+            TextResponseFake::make()
+                ->withText('Response')
+                ->withFinishReason(FinishReason::Stop),
+        ]);
+
+        $response = $this->post(route('chat.stream', $this->chat), [
+            'message' => 'Test message',
+        ]);
+
+        $response->assertOk();
+
+        $userMessage = $this->chat->messages()->where('role', 'user')->latest()->first();
+        expect($userMessage->role)->toBe('user');
+        expect($userMessage->parts)->toBe('Test message');
+        expect($userMessage->attachments)->toBe('[]');
+    });
+
+    it('sets correct message attributes when creating assistant message', function (): void {
+        Prism::fake([
+            TextResponseFake::make()
+                ->withText('Assistant response')
+                ->withFinishReason(FinishReason::Stop),
+        ]);
+
+        $response = $this->post(route('chat.stream', $this->chat), [
+            'message' => 'Test message',
+        ]);
+
+        $response->assertOk();
+        $response->assertStreamed();
+        $response->assertStreamedContent('Assistant response');
+
+        $assistantMessage = $this->chat->messages()->where('role', 'assistant')->latest()->first();
+        expect($assistantMessage)->not()->toBeNull();
+        expect($assistantMessage->role)->toBe('assistant');
+        expect($assistantMessage->parts)->toBe('Assistant response');
+        expect($assistantMessage->attachments)->toBe('[]');
+    });
+
+    it('handles multiple text chunks correctly', function (): void {
+        Prism::fake([
+            TextResponseFake::make()
+                ->withText('First chunk Second chunk')
+                ->withFinishReason(FinishReason::Stop),
+        ]);
+
+        $response = $this->post(route('chat.stream', $this->chat), [
+            'message' => 'Multi-chunk message',
+        ]);
+
+        $response->assertOk();
+        $response->assertStreamed();
+        $response->assertStreamedContent('First chunk Second chunk');
+
+        $assistantMessage = $this->chat->messages()->where('role', 'assistant')->latest()->first();
+        expect($assistantMessage->parts)->toBe('First chunk Second chunk');
+    });
+
+    it('only processes text chunks and ignores other chunk types', function (): void {
+        Prism::fake([
+            TextResponseFake::make()
+                ->withText('Only this text should be processed')
+                ->withFinishReason(FinishReason::Stop),
+        ]);
+
+        $response = $this->post(route('chat.stream', $this->chat), [
+            'message' => 'Test message',
+        ]);
+
+        $response->assertOk();
+        $response->assertStreamed();
+        $response->assertStreamedContent('Only this text should be processed');
+
+        $assistantMessage = $this->chat->messages()->where('role', 'assistant')->latest()->first();
+        expect($assistantMessage->parts)->toBe('Only this text should be processed');
     });
 });

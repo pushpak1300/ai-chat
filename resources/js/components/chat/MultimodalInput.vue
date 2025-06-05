@@ -3,7 +3,7 @@ import type { Message } from '@/types'
 import { Icon } from '@iconify/vue'
 import { useStream } from '@laravel/stream-vue'
 import { AnimatePresence } from 'motion-v'
-import { nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import PreviewAttachment from '@/components/chat/PreviewAttachment.vue'
 import SendButton from '@/components/chat/SendButton.vue'
 import StopButton from '@/components/chat/StopButton.vue'
@@ -33,6 +33,8 @@ const { isFetching, isStreaming } = useStream(`stream/${props.chatId}`, { id: pr
 const textareaRef = ref<HTMLTextAreaElement>()
 const uploadQueue = ref<Array<string>>([])
 
+const canSendMessage = computed(() => !isFetching.value && !isStreaming.value)
+
 let adjustHeightTimeout: ReturnType<typeof setTimeout> | null = null
 
 function adjustHeight() {
@@ -55,7 +57,7 @@ function handleKeyDown(event: KeyboardEvent) {
   ) {
     event.preventDefault()
 
-    if (isFetching.value || isStreaming.value) {
+    if (!canSendMessage.value) {
       event.preventDefault()
     }
     else {
@@ -65,6 +67,10 @@ function handleKeyDown(event: KeyboardEvent) {
 }
 
 function submitForm() {
+  if (!canSendMessage.value) {
+    return
+  }
+
   emit('handleSubmit')
   nextTick(() => {
     emit('scrollToBottom')
@@ -119,8 +125,15 @@ watch(() => isStreaming.value, (newValue, oldValue) => {
     </div>
 
     <Textarea
-      ref="textareaRef" v-model="input" data-testid="multimodal-input" placeholder="Send a message..."
-      class="min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700" rows="2" @keydown="handleKeyDown"
+      ref="textareaRef"
+      :model-value="input"
+      data-testid="multimodal-input"
+      placeholder="Send a message..."
+      :disabled="!canSendMessage"
+      class="min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
+      rows="2"
+      @update:model-value="input = $event"
+      @keydown="handleKeyDown"
     />
 
     <div class="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
@@ -128,7 +141,7 @@ watch(() => isStreaming.value, (newValue, oldValue) => {
       <SendButton
         v-else
         :upload-queue="uploadQueue"
-        :is-processing="isStreaming"
+        :is-processing="!canSendMessage"
         @submit="submitForm"
       />
     </div>

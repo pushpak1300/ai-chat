@@ -77,6 +77,7 @@ function handleStreamData(chunk: string): void {
 
 function handleStreamError(error: Error): void {
   console.error('Stream error:', error)
+
   nextTick(() => {
     messages.value.push({
       role: Role.ASSISTANT,
@@ -85,13 +86,18 @@ function handleStreamError(error: Error): void {
   })
 }
 
+function handleStreamFinish(): void {
+  router.reload({
+    only: ['chatHistory', 'chat'],
+    async: true,
+  })
+  clearInput()
+}
+
 const { isFetching, isStreaming, send, cancel, id } = useStream(route('chat.stream', { chat: props.chat.id }), {
   onData: handleStreamData,
   onError: handleStreamError,
-  onFinish: () => {
-    router.reload({ only: ['chatHistory', 'chat'], async: true })
-    clearInput()
-  },
+  onFinish: handleStreamFinish,
 })
 
 function sendInitialMessage(messageContent: string): void {
@@ -136,7 +142,9 @@ async function handleSubmit(): Promise<void> {
 }
 
 function stop(): void {
-  cancel()
+  if (isStreaming.value || isFetching.value) {
+    cancel()
+  }
 }
 
 onMounted(() => {

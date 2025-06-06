@@ -1,17 +1,44 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
 import { AnimatePresence, motion } from 'motion-v'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import MarkdownRenderer from './MarkdownRenderer.vue'
 
 interface Props {
+  chunkType: string
+  content: string
   isLoading: boolean
-  reasoning: string
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const isExpanded = ref(true)
+
+const chunkConfig = computed(() => {
+  switch (props.chunkType) {
+    case 'thinking':
+      return {
+        loadingLabel: 'Reasoning',
+        completedLabel: 'Reasoned for a few seconds',
+        icon: 'lucide:brain',
+        expandable: true,
+      }
+    case 'meta':
+      return {
+        loadingLabel: 'Processing metadata',
+        completedLabel: 'Metadata processed',
+        icon: 'lucide:info',
+        expandable: true,
+      }
+    default:
+      return {
+        loadingLabel: `Processing ${props.chunkType}`,
+        completedLabel: `${props.chunkType} completed`,
+        icon: 'lucide:activity',
+        expandable: true,
+      }
+  }
+})
 
 const variants = {
   collapsed: {
@@ -32,15 +59,16 @@ const variants = {
 <template>
   <div class="flex flex-col">
     <div v-if="isLoading" class="flex flex-row gap-2 items-center">
-      <div class="font-medium">Reasoning</div>
+      <div class="font-medium">{{ chunkConfig.loadingLabel }}</div>
       <div class="animate-spin">
         <Icon icon="lucide:loader-2" class="size-4" />
       </div>
     </div>
     <div v-else class="flex flex-row gap-2 items-center">
-      <div class="font-medium">Reasoned for a few seconds</div>
+      <div class="font-medium">{{ chunkConfig.completedLabel }}</div>
       <button
-        data-testid="message-reasoning-toggle"
+        v-if="chunkConfig.expandable && content"
+        :data-testid="`chunk-${chunkType}-toggle`"
         type="button"
         class="cursor-pointer"
         @click="isExpanded = !isExpanded"
@@ -55,8 +83,8 @@ const variants = {
 
     <AnimatePresence :initial="false">
       <motion.div
-        v-if="isExpanded"
-        data-testid="message-reasoning"
+        v-if="isExpanded && content"
+        :data-testid="`chunk-${chunkType}-content`"
         key="content"
         :initial="variants.collapsed"
         :animate="variants.expanded"
@@ -65,7 +93,7 @@ const variants = {
         style="overflow: hidden"
         class="pl-4 text-zinc-600 dark:text-zinc-400 border-l flex flex-col gap-4"
       >
-        <MarkdownRenderer :content="reasoning" />
+        <MarkdownRenderer :content="content" />
       </motion.div>
     </AnimatePresence>
   </div>

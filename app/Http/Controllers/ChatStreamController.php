@@ -43,19 +43,17 @@ final class ChatStreamController extends Controller
                     ->asStream();
 
                 foreach ($response as $chunk) {
+                    $chunkData = [
+                        'chunkType' => $this->mapChunkTypeToString($chunk->chunkType),
+                        'content' => $chunk->text,
+                    ];
+
+                    // Only accumulate text chunks for storage
                     if ($chunk->chunkType === ChunkType::Text) {
                         $assistantContent .= $chunk->text;
-                        yield 'data: '.json_encode([
-                            'type' => 'text',
-                            'content' => $chunk->text
-                        ])."\n\n";
-                    } elseif ($chunk->chunkType === ChunkType::Thinking) {
-                        // Stream reasoning chunks but don't store them
-                        yield 'data: '.json_encode([
-                            'type' => 'reasoning',
-                            'content' => $chunk->text
-                        ])."\n\n";
                     }
+
+                    yield 'data: '.json_encode($chunkData)."\n\n";
                 }
 
                 if ($assistantContent !== '' && $assistantContent !== '0') {
@@ -69,7 +67,10 @@ final class ChatStreamController extends Controller
 
             } catch (Throwable $throwable) {
                 Log::error("Chat stream error for chat {$chat->id}: ".$throwable->getMessage());
-                yield 'data: '.json_encode(['type' => 'error', 'content' => 'Stream failed'])."\n\n";
+                yield 'data: '.json_encode([
+                    'chunkType' => 'error',
+                    'content' => 'Stream failed'
+                ])."\n\n";
             }
         });
     }
@@ -84,5 +85,14 @@ final class ChatStreamController extends Controller
                 'assistant' => new AssistantMessage(content: $message->parts),
             })
             ->toArray();
+    }
+
+    private function mapChunkTypeToString(ChunkType $chunkType): string
+    {
+        return match ($chunkType) {
+            ChunkType::Text => 'text',
+            ChunkType::Thinking => 'thinking',
+            ChunkType::Meta => 'meta',
+        };
     }
 }

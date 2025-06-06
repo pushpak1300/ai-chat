@@ -32,9 +32,15 @@ interface StreamParams {
   model: string
 }
 
-interface StreamChunk {
-  type: 'text' | 'reasoning' | 'error'
+interface ChunkData {
+  chunkType: string
   content: string
+}
+
+interface ChunkState {
+  type: string
+  content: string
+  isLoading: boolean
 }
 
 const { input, clearInput } = provideChatInput()
@@ -42,8 +48,7 @@ const initialVisibilityType = ref<Visibility>(initialVisibility.value)
 const selectedModel = useStorage<Model>(MODEL_KEY, props.availableModels[0])
 const messages = ref<Message[]>([...(props.chat?.messages || [])])
 const votes = ref<Record<string, unknown>[]>([])
-const currentReasoning = ref<string>('')
-const isCurrentlyReasoning = ref<boolean>(false)
+const currentChunks = ref<Record<string, ChunkState>>({})
 
 const { visibility } = provideVisibility(initialVisibility.value, initialVisibilityType)
 
@@ -70,20 +75,10 @@ watch(visibility, (newVisibility, oldVisibility) => {
 
 function handleStreamData(data: string): void {
   try {
-    const chunk: StreamChunk = JSON.parse(data)
+    const chunk: ChunkData = JSON.parse(data)
 
-    if (chunk.type === 'reasoning') {
-      isCurrentlyReasoning.value = true
-      currentReasoning.value += chunk.content
-      return
-    }
-
-    if (chunk.type === 'text') {
-      // If we were reasoning, stop the reasoning state
-      if (isCurrentlyReasoning.value) {
-        isCurrentlyReasoning.value = false
-      }
-
+    if (chunk.chunkType === 'text') {
+      // Handle text chunks - add to message content
       const lastMessage = messages.value[messages.value.length - 1]
 
       if (!lastMessage || lastMessage.role !== Role.ASSISTANT) {
@@ -98,9 +93,9 @@ function handleStreamData(data: string): void {
       return
     }
 
-    if (chunk.type === 'error') {
+    if (chunk.chunkType === 'error') {
       console.error('Stream error:', chunk.content)
-      isCurrentlyReasoning.value = false
+      clearCurrentChunks()
 
       nextTick(() => {
         messages.value.push({
@@ -108,6 +103,20 @@ function handleStreamData(data: string): void {
           parts: 'Sorry, there was an error processing your request. Please try again.',
         })
       })
+      return
+    }
+
+    // Handle any non-text chunk type (thinking, meta, etc.)
+    if (chunk.chunkType !== 'text') {
+      if (!currentChunks.value[chunk.chunkType]) {
+        currentChunks.value[chunk.chunkType] = {
+          type: chunk.chunkType,
+          content: '',
+          isLoading: true,
+        }
+      }
+
+      currentChunks.value[chunk.chunkType].content += chunk.content
     }
   } catch (parseError) {
     console.error('Failed to parse stream data:', parseError)
@@ -126,9 +135,15 @@ function handleStreamData(data: string): void {
   }
 }
 
+function clearCurrentChunks(): void {
+  Object.keys(currentChunks.value).forEach((chunkType) => {
+    currentChunks.value[chunkType].isLoading = false
+  })
+}
+
 function handleStreamError(error: Error): void {
   console.error('Stream error:', error)
-  isCurrentlyReasoning.value = false
+  clearCurrentChunks()
 
   nextTick(() => {
     messages.value.push({
@@ -139,7 +154,7 @@ function handleStreamError(error: Error): void {
 }
 
 function handleStreamFinish(): void {
-  isCurrentlyReasoning.value = false
+  clearCurrentChunks()
   router.reload({
     only: ['chatHistory', 'chat'],
     async: true,
@@ -160,9 +175,8 @@ function sendInitialMessage(messageContent: string): void {
   }
 
   messages.value.push(userMessage)
-  // Reset reasoning state for new message
-  currentReasoning.value = ''
-  isCurrentlyReasoning.value = false
+  // Reset chunk state for new message
+  currentChunks.value = {}
 
   const params: StreamParams = {
     message: messageContent,
@@ -188,9 +202,8 @@ async function handleSubmit(): Promise<void> {
       messages.value.push(userMessage)
     })
 
-    // Reset reasoning state for new message
-    currentReasoning.value = ''
-    isCurrentlyReasoning.value = false
+    // Reset chunk state for new message
+    currentChunks.value = {}
 
     const params: StreamParams = {
       message: trimmedInput,
@@ -203,7 +216,7 @@ async function handleSubmit(): Promise<void> {
 
 function stop(): void {
   if (isStreaming.value || isFetching.value) {
-    isCurrentlyReasoning.value = false
+    clearCurrentChunks()
     cancel()
   }
 }
@@ -234,8 +247,7 @@ onMounted(() => {
         :stream-id="id"
         :votes="votes"
         :is-readonly="false"
-        :reasoning="currentReasoning"
-        :is-reasoning="isCurrentlyReasoning"
+        :current-chunks="currentChunks"
         @stop="stop"
         @handle-submit="handleSubmit"
       />

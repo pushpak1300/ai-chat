@@ -8,14 +8,19 @@ import ThinkingMessage from '@/components/chat/ThinkingMessage.vue'
 import { useScrollToBottom } from '@/composables/useScrollToBottom'
 import { Role } from '@/types/enum'
 
+interface ChunkState {
+  type: string
+  content: string
+  isLoading: boolean
+}
+
 const props = defineProps<{
   chatId?: string
   streamId?: string
   votes?: Array<Record<string, any>>
   messages: Array<MessageType>
   isReadonly: boolean
-  reasoning?: string
-  isReasoning?: boolean
+  currentChunks?: Record<string, ChunkState>
 }>()
 
 const emit = defineEmits<{
@@ -71,10 +76,11 @@ defineExpose({
   scrollToBottom: scrollToBottomInstant,
 })
 
-function shouldShowReasoning(message: MessageType, index: number): boolean {
+function shouldShowChunks(message: MessageType, index: number): boolean {
   return message.role === Role.ASSISTANT
     && index === props.messages.length - 1
-    && (props.isReasoning || !!props.reasoning)
+    && props.currentChunks
+    && Object.keys(props.currentChunks).length > 0
 }
 </script>
 
@@ -97,8 +103,7 @@ function shouldShowReasoning(message: MessageType, index: number): boolean {
           :is-loading="isStreaming && messages.length - 1 === index"
           :is-readonly="isReadonly"
           :requires-scroll-padding="hasSentMessage && index === messages.length - 1"
-          :reasoning="shouldShowReasoning(message, index) ? reasoning : undefined"
-          :is-reasoning="shouldShowReasoning(message, index) ? isReasoning : false"
+          :current-chunks="shouldShowChunks(message, index) ? currentChunks : undefined"
         />
 
         <ThinkingMessage

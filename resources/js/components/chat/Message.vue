@@ -4,9 +4,15 @@ import { Icon } from '@iconify/vue'
 import { AnimatePresence, motion } from 'motion-v'
 import { ref } from 'vue'
 import { Role } from '@/types/enum'
+import ChunkDisplay from './ChunkDisplay.vue'
 import MarkdownRenderer from './MarkdownRenderer.vue'
 import MessageActions from './MessageActions.vue'
-import MessageReasoning from './MessageReasoning.vue'
+
+interface ChunkState {
+  type: string
+  content: string
+  isLoading: boolean
+}
 
 defineProps<{
   message: Message
@@ -14,8 +20,7 @@ defineProps<{
   requiresScrollPadding: boolean
   isReadonly?: boolean
   chatId?: string
-  reasoning?: string
-  isReasoning?: boolean
+  currentChunks?: Record<string, ChunkState>
 }>()
 
 const mode = ref<'view' | 'edit'>('view')
@@ -61,12 +66,16 @@ const mode = ref<'view' | 'edit'>('view')
             class="flex flex-row justify-end gap-2"
           />
 
-          <!-- Show reasoning for assistant messages -->
-          <MessageReasoning
-            v-if="message.role === Role.ASSISTANT && (reasoning || isReasoning)"
-            :is-loading="isReasoning || false"
-            :reasoning="reasoning || ''"
-          />
+          <!-- Show chunks for assistant messages -->
+          <div v-if="message.role === Role.ASSISTANT && currentChunks" class="flex flex-col gap-4">
+            <ChunkDisplay
+              v-for="(chunkState, chunkType) in currentChunks"
+              :key="chunkType"
+              :chunk-type="chunkState.type"
+              :content="chunkState.content"
+              :is-loading="chunkState.isLoading"
+            />
+          </div>
 
           <div class="flex flex-row gap-2 items-start">
             <!-- <Tooltip v-if="message.role === 'user' && !isLoading">

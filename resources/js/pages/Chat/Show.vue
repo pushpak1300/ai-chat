@@ -37,10 +37,24 @@ const initialVisibilityType = ref<Visibility>(initialVisibility.value)
 const selectedModel = useStorage<Model>(MODEL_KEY, props.availableModels[0])
 const messages = ref<Message[]>([...(props.chat?.messages || [])])
 const votes = ref<Record<string, unknown>[]>([])
+const chatContainerRef = ref<InstanceType<typeof ChatContainer>>()
 
 const { visibility } = provideVisibility(initialVisibility.value, initialVisibilityType)
 
 provide('chatId', props.chat.id)
+
+// Watch for messages changes and auto-scroll to bottom when messages are first loaded
+watch(() => props.chat?.messages, (newMessages) => {
+  if (newMessages && newMessages.length > 0) {
+    messages.value = [...newMessages]
+    nextTick(() => {
+      // Trigger scroll to bottom after messages are rendered
+      if (chatContainerRef.value) {
+        chatContainerRef.value.handleScrollToBottom()
+      }
+    })
+  }
+}, { immediate: true, deep: true })
 
 function updateChatVisibility(newVisibility: Visibility): void {
   router.patch(
@@ -160,6 +174,13 @@ onMounted(() => {
     sendInitialMessage(lastMessage.parts)
     clearInput()
   }
+
+  // Ensure scroll to bottom after component is mounted and messages are available
+  nextTick(() => {
+    if (messages.value.length > 0 && chatContainerRef.value) {
+      chatContainerRef.value.handleScrollToBottom()
+    }
+  })
 })
 </script>
 
@@ -168,6 +189,7 @@ onMounted(() => {
   <AppLayout :breadcrumbs="breadcrumbs" :chat-history="chatHistory">
     <div class="h-[calc(100vh-4rem)] bg-background">
       <ChatContainer
+        ref="chatContainerRef"
         :chat-id="props.chat.id"
         :messages="messages"
         :stream-id="id"

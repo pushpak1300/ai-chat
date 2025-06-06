@@ -32,6 +32,10 @@ const messagesRef = ref<InstanceType<typeof Messages>>()
 function handleScrollToBottom() {
   messagesRef.value?.scrollToBottom()
 }
+
+defineExpose({
+  handleScrollToBottom,
+})
 </script>
 
 <template>

@@ -43,12 +43,10 @@ const { visibility } = provideVisibility(initialVisibility.value, initialVisibil
 
 provide('chatId', props.chat.id)
 
-// Watch for messages changes and auto-scroll to bottom when messages are first loaded
 watch(() => props.chat?.messages, (newMessages) => {
   if (newMessages && newMessages.length > 0) {
     messages.value = [...newMessages]
     nextTick(() => {
-      // Trigger scroll to bottom after messages are rendered
       if (chatContainerRef.value) {
         chatContainerRef.value.handleScrollToBottom()
       }
@@ -175,7 +173,6 @@ onMounted(() => {
     clearInput()
   }
 
-  // Ensure scroll to bottom after component is mounted and messages are available
   nextTick(() => {
     if (messages.value.length > 0 && chatContainerRef.value) {
       chatContainerRef.value.handleScrollToBottom()

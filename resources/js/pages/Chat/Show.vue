@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { BreadcrumbItemType, Chat, ChatHistory, Message, Model } from '@/types'
+import type { BreadcrumbItemType, Chat, ChatHistory, Chunk, Message, MessageChunks, Model } from '@/types'
 import { Head, router } from '@inertiajs/vue3'
-import { useStream } from '@laravel/stream-vue'
+import { useJsonStream } from '@laravel/stream-vue'
 import { useStorage } from '@vueuse/core'
 import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
 import ChatContainer from '@/components/chat/ChatContainer.vue'
@@ -9,7 +9,7 @@ import { provideChatInput } from '@/composables/useChatInput'
 import { provideVisibility } from '@/composables/useVisibility'
 import { MODEL_KEY } from '@/constants/models'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Role, Visibility } from '@/types/enum'
+import { ChunkType, Role, Visibility } from '@/types/enum'
 
 const props = defineProps<{
   chatHistory?: ChatHistory
@@ -35,8 +35,10 @@ interface StreamParams {
 const { input, clearInput } = provideChatInput()
 const initialVisibilityType = ref<Visibility>(initialVisibility.value)
 const selectedModel = useStorage<Model>(MODEL_KEY, props.availableModels[0])
-const messages = ref<Message[]>([...(props.chat?.messages || [])])
-const votes = ref<Record<string, unknown>[]>([])
+const messages = ref<Message[]>([...(props.chat?.messages?.map(message => ({
+  ...message,
+  attachments: typeof message.attachments === 'string' ? JSON.parse(message.attachments) : message.attachments,
+})) || [])])
 const chatContainerRef = ref<InstanceType<typeof ChatContainer>>()
 
 const { visibility } = provideVisibility(initialVisibility.value, initialVisibilityType)
@@ -73,46 +75,53 @@ watch(visibility, (newVisibility, oldVisibility) => {
   }
 }, { immediate: false })
 
-function handleStreamData(chunk: string): void {
-  const lastMessage = messages.value[messages.value.length - 1]
+const { isFetching, isStreaming, send, cancel, id } = useJsonStream<Chunk>(
+  route('chat.stream', { chat: props.chat.id }),
+  {
+    onData: (chunk: string) => {
+      try {
+        const chunkData = JSON.parse(chunk)
 
-  if (!lastMessage || lastMessage.role !== Role.ASSISTANT) {
-    messages.value.push({
-      role: Role.ASSISTANT,
-      parts: chunk,
-    })
-  }
-  else {
-    lastMessage.parts += chunk
-  }
-}
+        let currentMessage = messages.value[messages.value.length - 1]
+        if (!currentMessage || currentMessage.role !== Role.ASSISTANT) {
+          currentMessage = {
+            role: Role.ASSISTANT,
+            parts: {},
+          }
+          messages.value.push(currentMessage)
+        }
 
-function handleStreamError(error: Error): void {
-  console.error('Stream error:', error)
+        if (!currentMessage.parts[chunkData.chunkType]) {
+          currentMessage.parts[chunkData.chunkType] = ''
+        }
+        currentMessage.parts[chunkData.chunkType] += chunkData.content
+      }
+      catch (error) {
+        console.error('Failed to parse chunk:', error)
+      }
+    },
+    onError: (error: Error) => {
+      console.error('Stream error:', error)
+      nextTick(() => {
+        messages.value.push({
+          role: Role.ASSISTANT,
+          parts: {
+            [ChunkType.TEXT]: 'Sorry, there was an error processing your request. Please try again.',
+          },
+        })
+      })
+    },
+    onFinish: () => {
+      router.reload({
+        only: ['chatHistory', 'chat'],
+        async: true,
+      })
+      clearInput()
+    },
+  },
+)
 
-  nextTick(() => {
-    messages.value.push({
-      role: Role.ASSISTANT,
-      parts: 'Sorry, there was an error processing your request. Please try again.',
-    })
-  })
-}
-
-function handleStreamFinish(): void {
-  router.reload({
-    only: ['chatHistory', 'chat'],
-    async: true,
-  })
-  clearInput()
-}
-
-const { isFetching, isStreaming, send, cancel, id } = useStream(route('chat.stream', { chat: props.chat.id }), {
-  onData: handleStreamData,
-  onError: handleStreamError,
-  onFinish: handleStreamFinish,
-})
-
-function sendInitialMessage(messageContent: string): void {
+function sendMessage(messageContent: MessageChunks): void {
   const userMessage: Message = {
     role: Role.USER,
     parts: messageContent,
@@ -121,7 +130,7 @@ function sendInitialMessage(messageContent: string): void {
   messages.value.push(userMessage)
 
   const params: StreamParams = {
-    message: messageContent,
+    message: messageContent[ChunkType.TEXT] || '',
     model: selectedModel.value.id,
   }
 
@@ -131,26 +140,30 @@ function sendInitialMessage(messageContent: string): void {
 async function handleSubmit(): Promise<void> {
   const trimmedInput = input.value.trim()
 
-  if (trimmedInput && !isFetching.value && !isStreaming.value && props.chat.id) {
-    clearInput()
+  if (!trimmedInput || isFetching.value || isStreaming.value || !props.chat.id) {
+    return
+  }
 
-    await nextTick(() => {
-      const userMessage: Message = {
-        role: Role.USER,
-        parts: trimmedInput,
-        attachments: [],
-      }
+  clearInput()
 
-      messages.value.push(userMessage)
-    })
-
-    const params: StreamParams = {
-      message: trimmedInput,
-      model: selectedModel.value.id,
+  await nextTick(() => {
+    const userMessage: Message = {
+      role: Role.USER,
+      parts: {
+        [ChunkType.TEXT]: trimmedInput,
+      },
+      attachments: [],
     }
 
-    send(params)
+    messages.value.push(userMessage)
+  })
+
+  const params: StreamParams = {
+    message: trimmedInput,
+    model: selectedModel.value.id,
   }
+
+  send(params)
 }
 
 function stop(): void {
@@ -161,15 +174,16 @@ function stop(): void {
 
 onMounted(() => {
   if (input.value.trim()) {
-    const storedInput = input.value.trim()
-    sendInitialMessage(storedInput)
+    sendMessage({
+      [ChunkType.TEXT]: input.value.trim(),
+    })
     clearInput()
     return
   }
 
   const lastMessage = messages.value[messages.value.length - 1]
   if (lastMessage && lastMessage.role === Role.USER) {
-    sendInitialMessage(lastMessage.parts)
+    sendMessage(lastMessage.parts)
     clearInput()
   }
 
@@ -190,7 +204,6 @@ onMounted(() => {
         :chat-id="props.chat.id"
         :messages="messages"
         :stream-id="id"
-        :votes="votes"
         :is-readonly="false"
         @stop="stop"
         @handle-submit="handleSubmit"

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { Message as MessageType } from '@/types'
-import { useStream } from '@laravel/stream-vue'
+import type { Chunk, Message as MessageType } from '@/types'
+import { useJsonStream } from '@laravel/stream-vue'
 import { nextTick, onMounted, ref, watch } from 'vue'
 import Greeting from '@/components/chat/Greeting.vue'
 import Message from '@/components/chat/Message.vue'
@@ -10,7 +10,6 @@ import { useScrollToBottom } from '@/composables/useScrollToBottom'
 const props = defineProps<{
   chatId?: string
   streamId?: string
-  votes?: Array<Record<string, any>>
   messages: Array<MessageType>
   isReadonly: boolean
 }>()
@@ -19,7 +18,7 @@ const emit = defineEmits<{
   updateIsAtBottom: [isAtBottom: boolean]
 }>()
 
-const { isFetching, isStreaming } = useStream(`stream/${props.chatId}`, { id: props.streamId })
+const { isFetching, isStreaming } = useJsonStream<Chunk>(`stream/${props.chatId}`, { id: props.streamId })
 
 const {
   containerRef,
@@ -85,7 +84,7 @@ defineExpose({
           :key="message.id"
           :message="message"
           :chat-id="chatId"
-          :is-loading="isStreaming && messages.length - 1 === index"
+          :is-loading="isStreaming"
           :is-readonly="isReadonly"
           :requires-scroll-padding="hasSentMessage && index === messages.length - 1"
         />

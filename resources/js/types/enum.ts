@@ -14,7 +14,7 @@ export enum Role {
   ASSISTANT = 'assistant',
 }
 
-export enum ContentType {
+export enum ChunkType {
   TEXT = 'text',
   THINKING = 'thinking',
   META = 'meta',

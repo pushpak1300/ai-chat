@@ -17,7 +17,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('chat_id')->constrained('chats');
             $table->string('role');
-            $table->text('parts');
+            $table->json('parts')->nullable();
             $table->string('attachments');
             $table->boolean('is_upvoted')->nullable();
             $table->timestamps();

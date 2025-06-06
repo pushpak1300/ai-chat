@@ -72,11 +72,18 @@ export interface PartType {
   content: string
 }
 
+export interface Chunk {
+  chunkType: ChunkType
+  content: string
+}
+
+export type MessageChunks = Record<ChunkType, string>
+
 export interface Message {
   id?: string
   chat_id?: string
   role: Role
-  parts: string
+  parts: MessageChunks
   attachments?: string[]
   is_upvoted?: boolean
   created_at?: string

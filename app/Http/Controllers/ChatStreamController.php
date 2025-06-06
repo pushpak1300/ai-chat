@@ -27,14 +27,17 @@ final class ChatStreamController extends Controller
 
         $chat->messages()->create([
             'role' => 'user',
-            'parts' => $userMessage,
+            'parts' => [
+                $this->mapChunkTypeToString(ChunkType::Text) => $userMessage,
+            ],
             'attachments' => '[]',
         ]);
 
         $messages = $this->buildConversationHistory($chat);
 
         return Response::stream(function () use ($chat, $messages, $model): Generator {
-            $assistantContent = '';
+            $parts = [];
+
             try {
                 $response = Prism::text()
                     ->withSystemPrompt(view('prompts.system'))
@@ -43,16 +46,25 @@ final class ChatStreamController extends Controller
                     ->asStream();
 
                 foreach ($response as $chunk) {
-                    if ($chunk->chunkType === ChunkType::Text) {
-                        $assistantContent .= $chunk->text;
-                        yield $chunk->text;
+                    $chunkData = [
+                        'chunkType' => $this->mapChunkTypeToString($chunk->chunkType),
+                        'content' => $chunk->text,
+                    ];
+
+                    $chunkTypeString = $this->mapChunkTypeToString($chunk->chunkType);
+
+                    if (!isset($parts[$chunkTypeString])) {
+                        $parts[$chunkTypeString] = '';
                     }
+                    $parts[$chunkTypeString] .= $chunk->text;
+
+                    yield 'data: ' . json_encode($chunkData) . "\n\n";
                 }
 
-                if ($assistantContent !== '' && $assistantContent !== '0') {
+                if ($parts !== []) {
                     $chat->messages()->create([
                         'role' => 'assistant',
-                        'parts' => $assistantContent,
+                        'parts' => $parts,
                         'attachments' => '[]',
                     ]);
                     $chat->touch();
@@ -60,9 +72,16 @@ final class ChatStreamController extends Controller
 
             } catch (Throwable $throwable) {
                 Log::error("Chat stream error for chat {$chat->id}: ".$throwable->getMessage());
-                yield 'data: '.json_encode(['error' => 'Stream failed'])."\n\n";
+                yield 'data: ' . json_encode([
+                    'chunkType' => 'error',
+                    'content' => 'Stream failed',
+                ]) . "\n\n";
             }
-        });
+        }, 200, [
+            'Content-Type' => 'text/event-stream',
+            'Cache-Control' => 'no-cache',
+            'Connection' => 'keep-alive',
+        ]);
     }
 
     private function buildConversationHistory(Chat $chat): array
@@ -71,9 +90,18 @@ final class ChatStreamController extends Controller
             ->orderBy('created_at')
             ->get()
             ->map(fn (Message $message): UserMessage|\Prism\Prism\ValueObjects\Messages\AssistantMessage => match ($message->role) {
-                'user' => new UserMessage(content: $message->parts),
-                'assistant' => new AssistantMessage(content: $message->parts),
+                'user' => new UserMessage(content: $message->parts['text']),
+                'assistant' => new AssistantMessage(content: $message->parts['text']),
             })
             ->toArray();
+    }
+
+    private function mapChunkTypeToString(ChunkType $chunkType): string
+    {
+        return match ($chunkType) {
+            ChunkType::Text => 'text',
+            ChunkType::Thinking => 'thinking',
+            ChunkType::Meta => 'meta',
+        };
     }
 }

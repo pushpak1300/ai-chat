@@ -12,6 +12,7 @@ enum ModelName: string
     // case GEMINI_2_0_FLASH = 'gemini-2.0-flash';
     case GPT_4O_MINI = 'gpt-4o-mini';
     case GPT_4_1_NANO = 'gpt-4.1-nano';
+    case O4_MINI = 'o4-mini';
 
     /**
      * Get all models as an array for frontend consumption
@@ -27,8 +28,9 @@ enum ModelName: string
     public function getName(): string
     {
         return match ($this) {
-            self::GPT_4O_MINI => 'GPT-4o Mini',
+            self::GPT_4O_MINI => 'GPT-4o mini',
             self::GPT_4_1_NANO => 'GPT-4.1 Nano',
+            self::O4_MINI => 'O4 mini',
         };
     }
 
@@ -37,6 +39,7 @@ enum ModelName: string
         return match ($this) {
             self::GPT_4O_MINI => 'Cheapest model, best for smarter tasks',
             self::GPT_4_1_NANO => 'Cheapest model, best for simpler tasks',
+            self::O4_MINI => 'Reasoning model, best for complex tasks',
         };
     }
 
@@ -45,6 +48,7 @@ enum ModelName: string
         return match ($this) {
             self::GPT_4O_MINI => Provider::OpenAI,
             self::GPT_4_1_NANO => Provider::OpenAI,
+            self::O4_MINI => Provider::OpenAI,
         };
     }
 

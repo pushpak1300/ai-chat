@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string $id
  * @property string $chat_id
  * @property string $role
- * @property string $parts
+ * @property array<string, string>|null $parts
  * @property array<array-key, mixed> $attachments
  * @property int|null $is_upvoted
  * @property Carbon|null $created_at
@@ -47,7 +47,7 @@ final class Message extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'parts' => 'string',
+        'parts' => 'array',
         'attachments' => 'array',
         'is_upvoted' => 'boolean',
     ];

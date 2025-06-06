@@ -8,7 +8,6 @@ withDefaults(defineProps<{
   messages?: Array<Message>
   streamId?: string
   attachments?: Array<string>
-  votes?: Array<Record<string, any>>
   isReadonly?: boolean
   chatId?: string
 }>(), {
@@ -45,7 +44,6 @@ defineExpose({
         ref="messagesRef"
         :chat-id="chatId"
         :stream-id="streamId"
-        :votes="votes"
         :messages="messages"
         :is-readonly="isReadonly"
         @update-is-at-bottom="isAtBottom = $event"

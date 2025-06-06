@@ -26,7 +26,7 @@ const page = usePage<SharedData>()
         <Breadcrumbs :breadcrumbs="breadcrumbs" />
       </template>
     </div>
-    <div v-if="page.url.startsWith('/chat')" class="flex items-center gap-2">
+    <div v-if="page.url.startsWith('/chat')" class="items-center gap-2 hidden md:flex">
       <ChatAction />
       <ModelSelector />
       <VisibilitySelector />

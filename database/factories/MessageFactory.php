@@ -20,7 +20,25 @@ final class MessageFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'role' => $this->faker->randomElement(['user', 'assistant']),
+            'parts' => ['text' => $this->faker->sentence()],
+            'attachments' => '[]',
         ];
+    }
+
+    public function user(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'role' => 'user',
+            'parts' => ['text' => $this->faker->sentence()],
+        ]);
+    }
+
+    public function assistant(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'role' => 'assistant',
+            'parts' => ['text' => $this->faker->paragraph()],
+        ]);
     }
 }

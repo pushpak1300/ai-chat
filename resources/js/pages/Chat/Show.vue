@@ -32,11 +32,23 @@ interface StreamParams {
   model: string
 }
 
+interface ChunkData {
+  chunkType: string
+  content: string
+}
+
+interface ChunkState {
+  type: string
+  content: string
+  isLoading: boolean
+}
+
 const { input, clearInput } = provideChatInput()
 const initialVisibilityType = ref<Visibility>(initialVisibility.value)
 const selectedModel = useStorage<Model>(MODEL_KEY, props.availableModels[0])
 const messages = ref<Message[]>([...(props.chat?.messages || [])])
 const votes = ref<Record<string, unknown>[]>([])
+const currentChunks = ref<Record<string, ChunkState>>({})
 
 const { visibility } = provideVisibility(initialVisibility.value, initialVisibilityType)
 
@@ -61,22 +73,77 @@ watch(visibility, (newVisibility, oldVisibility) => {
   }
 }, { immediate: false })
 
-function handleStreamData(chunk: string): void {
-  const lastMessage = messages.value[messages.value.length - 1]
+function handleStreamData(data: string): void {
+  try {
+    const chunk: ChunkData = JSON.parse(data)
 
-  if (!lastMessage || lastMessage.role !== Role.ASSISTANT) {
-    messages.value.push({
-      role: Role.ASSISTANT,
-      parts: chunk,
-    })
+    if (chunk.chunkType === 'text') {
+      // Handle text chunks - add to message content
+      const lastMessage = messages.value[messages.value.length - 1]
+
+      if (!lastMessage || lastMessage.role !== Role.ASSISTANT) {
+        messages.value.push({
+          role: Role.ASSISTANT,
+          parts: chunk.content,
+        })
+      }
+      else {
+        lastMessage.parts += chunk.content
+      }
+      return
+    }
+
+    if (chunk.chunkType === 'error') {
+      console.error('Stream error:', chunk.content)
+      clearCurrentChunks()
+
+      nextTick(() => {
+        messages.value.push({
+          role: Role.ASSISTANT,
+          parts: 'Sorry, there was an error processing your request. Please try again.',
+        })
+      })
+      return
+    }
+
+    // Handle any non-text chunk type (thinking, meta, etc.)
+    if (chunk.chunkType !== 'text') {
+      if (!currentChunks.value[chunk.chunkType]) {
+        currentChunks.value[chunk.chunkType] = {
+          type: chunk.chunkType,
+          content: '',
+          isLoading: true,
+        }
+      }
+
+      currentChunks.value[chunk.chunkType].content += chunk.content
+    }
+  } catch (parseError) {
+    console.error('Failed to parse stream data:', parseError)
+    // Fallback for non-JSON data (backward compatibility)
+    const lastMessage = messages.value[messages.value.length - 1]
+
+    if (!lastMessage || lastMessage.role !== Role.ASSISTANT) {
+      messages.value.push({
+        role: Role.ASSISTANT,
+        parts: data,
+      })
+    }
+    else {
+      lastMessage.parts += data
+    }
   }
-  else {
-    lastMessage.parts += chunk
-  }
+}
+
+function clearCurrentChunks(): void {
+  Object.keys(currentChunks.value).forEach((chunkType) => {
+    currentChunks.value[chunkType].isLoading = false
+  })
 }
 
 function handleStreamError(error: Error): void {
   console.error('Stream error:', error)
+  clearCurrentChunks()
 
   nextTick(() => {
     messages.value.push({
@@ -87,6 +154,7 @@ function handleStreamError(error: Error): void {
 }
 
 function handleStreamFinish(): void {
+  clearCurrentChunks()
   router.reload({
     only: ['chatHistory', 'chat'],
     async: true,
@@ -107,6 +175,8 @@ function sendInitialMessage(messageContent: string): void {
   }
 
   messages.value.push(userMessage)
+  // Reset chunk state for new message
+  currentChunks.value = {}
 
   const params: StreamParams = {
     message: messageContent,
@@ -132,6 +202,9 @@ async function handleSubmit(): Promise<void> {
       messages.value.push(userMessage)
     })
 
+    // Reset chunk state for new message
+    currentChunks.value = {}
+
     const params: StreamParams = {
       message: trimmedInput,
       model: selectedModel.value.id,
@@ -143,6 +216,7 @@ async function handleSubmit(): Promise<void> {
 
 function stop(): void {
   if (isStreaming.value || isFetching.value) {
+    clearCurrentChunks()
     cancel()
   }
 }
@@ -173,6 +247,7 @@ onMounted(() => {
         :stream-id="id"
         :votes="votes"
         :is-readonly="false"
+        :current-chunks="currentChunks"
         @stop="stop"
         @handle-submit="handleSubmit"
       />

@@ -6,6 +6,13 @@ import Greeting from '@/components/chat/Greeting.vue'
 import Message from '@/components/chat/Message.vue'
 import ThinkingMessage from '@/components/chat/ThinkingMessage.vue'
 import { useScrollToBottom } from '@/composables/useScrollToBottom'
+import { Role } from '@/types/enum'
+
+interface ChunkState {
+  type: string
+  content: string
+  isLoading: boolean
+}
 
 const props = defineProps<{
   chatId?: string
@@ -13,6 +20,7 @@ const props = defineProps<{
   votes?: Array<Record<string, any>>
   messages: Array<MessageType>
   isReadonly: boolean
+  currentChunks?: Record<string, ChunkState>
 }>()
 
 const emit = defineEmits<{
@@ -67,6 +75,13 @@ onMounted(() => {
 defineExpose({
   scrollToBottom: scrollToBottomInstant,
 })
+
+function shouldShowChunks(message: MessageType, index: number): boolean {
+  return message.role === Role.ASSISTANT
+    && index === props.messages.length - 1
+    && props.currentChunks
+    && Object.keys(props.currentChunks).length > 0
+}
 </script>
 
 <template>
@@ -88,6 +103,7 @@ defineExpose({
           :is-loading="isStreaming && messages.length - 1 === index"
           :is-readonly="isReadonly"
           :requires-scroll-padding="hasSentMessage && index === messages.length - 1"
+          :current-chunks="shouldShowChunks(message, index) ? currentChunks : undefined"
         />
 
         <ThinkingMessage

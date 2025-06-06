@@ -4,6 +4,12 @@ import { ref } from 'vue'
 import Messages from '@/components/chat/Messages.vue'
 import MultimodalInput from '@/components/chat/MultimodalInput.vue'
 
+interface ChunkState {
+  type: string
+  content: string
+  isLoading: boolean
+}
+
 withDefaults(defineProps<{
   messages?: Array<Message>
   streamId?: string
@@ -11,6 +17,7 @@ withDefaults(defineProps<{
   votes?: Array<Record<string, any>>
   isReadonly?: boolean
   chatId?: string
+  currentChunks?: Record<string, ChunkState>
 }>(), {
   messages: () => [],
   streamId: '',
@@ -18,6 +25,7 @@ withDefaults(defineProps<{
   votes: () => [],
   isReadonly: false,
   chatId: '',
+  currentChunks: () => ({}),
 })
 
 defineEmits<{
@@ -44,6 +52,7 @@ function handleScrollToBottom() {
         :votes="votes"
         :messages="messages"
         :is-readonly="isReadonly"
+        :current-chunks="currentChunks"
         @update-is-at-bottom="isAtBottom = $event"
       />
     </div>

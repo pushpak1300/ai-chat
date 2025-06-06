@@ -11,6 +11,8 @@ withDefaults(defineProps<{
   votes?: Array<Record<string, any>>
   isReadonly?: boolean
   chatId?: string
+  reasoning?: string
+  isReasoning?: boolean
 }>(), {
   messages: () => [],
   streamId: '',
@@ -18,6 +20,8 @@ withDefaults(defineProps<{
   votes: () => [],
   isReadonly: false,
   chatId: '',
+  reasoning: '',
+  isReasoning: false,
 })
 
 defineEmits<{
@@ -44,6 +48,8 @@ function handleScrollToBottom() {
         :votes="votes"
         :messages="messages"
         :is-readonly="isReadonly"
+        :reasoning="reasoning"
+        :is-reasoning="isReasoning"
         @update-is-at-bottom="isAtBottom = $event"
       />
     </div>

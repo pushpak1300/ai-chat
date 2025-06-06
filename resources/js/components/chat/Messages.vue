@@ -6,6 +6,7 @@ import Greeting from '@/components/chat/Greeting.vue'
 import Message from '@/components/chat/Message.vue'
 import ThinkingMessage from '@/components/chat/ThinkingMessage.vue'
 import { useScrollToBottom } from '@/composables/useScrollToBottom'
+import { Role } from '@/types/enum'
 
 const props = defineProps<{
   chatId?: string
@@ -13,6 +14,8 @@ const props = defineProps<{
   votes?: Array<Record<string, any>>
   messages: Array<MessageType>
   isReadonly: boolean
+  reasoning?: string
+  isReasoning?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -67,6 +70,12 @@ onMounted(() => {
 defineExpose({
   scrollToBottom: scrollToBottomInstant,
 })
+
+function shouldShowReasoning(message: MessageType, index: number): boolean {
+  return message.role === Role.ASSISTANT
+    && index === props.messages.length - 1
+    && (props.isReasoning || !!props.reasoning)
+}
 </script>
 
 <template>
@@ -88,6 +97,8 @@ defineExpose({
           :is-loading="isStreaming && messages.length - 1 === index"
           :is-readonly="isReadonly"
           :requires-scroll-padding="hasSentMessage && index === messages.length - 1"
+          :reasoning="shouldShowReasoning(message, index) ? reasoning : undefined"
+          :is-reasoning="shouldShowReasoning(message, index) ? isReasoning : false"
         />
 
         <ThinkingMessage

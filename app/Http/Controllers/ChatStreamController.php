@@ -45,7 +45,16 @@ final class ChatStreamController extends Controller
                 foreach ($response as $chunk) {
                     if ($chunk->chunkType === ChunkType::Text) {
                         $assistantContent .= $chunk->text;
-                        yield $chunk->text;
+                        yield 'data: '.json_encode([
+                            'type' => 'text',
+                            'content' => $chunk->text
+                        ])."\n\n";
+                    } elseif ($chunk->chunkType === ChunkType::Thinking) {
+                        // Stream reasoning chunks but don't store them
+                        yield 'data: '.json_encode([
+                            'type' => 'reasoning',
+                            'content' => $chunk->text
+                        ])."\n\n";
                     }
                 }
 
@@ -60,7 +69,7 @@ final class ChatStreamController extends Controller
 
             } catch (Throwable $throwable) {
                 Log::error("Chat stream error for chat {$chat->id}: ".$throwable->getMessage());
-                yield 'data: '.json_encode(['error' => 'Stream failed'])."\n\n";
+                yield 'data: '.json_encode(['type' => 'error', 'content' => 'Stream failed'])."\n\n";
             }
         });
     }

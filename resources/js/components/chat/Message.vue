@@ -6,6 +6,7 @@ import { ref } from 'vue'
 import { Role } from '@/types/enum'
 import MarkdownRenderer from './MarkdownRenderer.vue'
 import MessageActions from './MessageActions.vue'
+import MessageReasoning from './MessageReasoning.vue'
 
 defineProps<{
   message: Message
@@ -13,6 +14,8 @@ defineProps<{
   requiresScrollPadding: boolean
   isReadonly?: boolean
   chatId?: string
+  reasoning?: string
+  isReasoning?: boolean
 }>()
 
 const mode = ref<'view' | 'edit'>('view')
@@ -57,6 +60,14 @@ const mode = ref<'view' | 'edit'>('view')
             data-testid="message-attachments"
             class="flex flex-row justify-end gap-2"
           />
+
+          <!-- Show reasoning for assistant messages -->
+          <MessageReasoning
+            v-if="message.role === Role.ASSISTANT && (reasoning || isReasoning)"
+            :is-loading="isReasoning || false"
+            :reasoning="reasoning || ''"
+          />
+
           <div class="flex flex-row gap-2 items-start">
             <!-- <Tooltip v-if="message.role === 'user' && !isLoading">
               <TooltipTrigger as-child>

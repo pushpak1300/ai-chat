@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\ModelName;
 use App\Enums\Visiblity;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +30,7 @@ final class StoreChatRequest extends FormRequest
     {
         return [
             'message' => 'required|string|max:255',
-            'model' => 'required|string|in:gemini-2.0-flash-lite,gemini-2.0-flash',
+            'model' => ['required', 'string', Rule::enum(ModelName::class)],
             'visibility' => ['required', 'string', Rule::enum(Visiblity::class)],
         ];
     }

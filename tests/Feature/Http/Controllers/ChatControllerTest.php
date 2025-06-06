@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Models\Chat;
 use App\Models\User;
 use App\Models\Message;
+use App\Enums\ModelName;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -74,7 +75,7 @@ describe('ChatController', function (): void {
             $data = [
                 'message' => 'Test chat message',
                 'visibility' => 'private',
-                'model' => 'gemini-2.0-flash',
+                'model' => ModelName::GPT_4_1_NANO->value,
             ];
 
             $response = $this->post(route('chats.store'), $data);
@@ -99,7 +100,7 @@ describe('ChatController', function (): void {
             $data = [
                 'message' => 'Test message',
                 'visibility' => 'invalid',
-                'model' => 'gemini-2.0-flash',
+                'model' => ModelName::GPT_4O_MINI->value,
             ];
 
             $response = $this->post(route('chats.store'), $data);

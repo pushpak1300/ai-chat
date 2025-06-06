@@ -5,9 +5,8 @@ declare(strict_types=1);
 use App\Models\Chat;
 use App\Models\User;
 use Prism\Prism\Prism;
-use Illuminate\Support\Facades\Log;
+use App\Enums\ModelName;
 use Prism\Prism\Enums\FinishReason;
-use Illuminate\Support\Facades\View;
 use Prism\Prism\Testing\TextResponseFake;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -29,7 +28,7 @@ describe('ChatStreamController', function (): void {
 
         $response = $this->post(route('chat.stream', $this->chat), [
             'message' => 'Hello',
-            'model' => 'gemini-2.0-flash',
+            'model' => ModelName::GPT_4O_MINI->value,
         ]);
 
         $response->assertOk();
@@ -48,7 +47,7 @@ describe('ChatStreamController', function (): void {
 
         $response = $this->post(route('chat.stream', $this->chat), [
             'message' => 'What is the weather like?',
-            'model' => 'gemini-2.0-flash',
+            'model' => ModelName::GPT_4O_MINI->value,
         ]);
 
         $response->assertOk();
@@ -73,7 +72,7 @@ describe('ChatStreamController', function (): void {
 
         $response = $this->post(route('chat.stream', $this->chat), [
             'message' => '  Hello with spaces  ',
-            'model' => 'gemini-2.0-flash',
+            'model' => ModelName::GPT_4O_MINI->value,
         ]);
 
         $response->assertOk();
@@ -114,7 +113,7 @@ describe('ChatStreamController', function (): void {
 
         $response = $this->post(route('chat.stream', $this->chat), [
             'message' => 'Test',
-            'model' => 'gemini-2.0-flash',
+            'model' => ModelName::GPT_4O_MINI->value,
         ]);
 
         $response->assertOk();
@@ -138,7 +137,7 @@ describe('ChatStreamController', function (): void {
         $response->assertStreamedContent('This is a longer response that will be chunked');
     });
 
-    it('defaults to gemini-2.0-flash-lite model when not specified', function (): void {
+    it('defaults to gpt-4.1-nano model when not specified', function (): void {
         Prism::fake([
             TextResponseFake::make()
                 ->withText('Default model response')

@@ -23,7 +23,7 @@ final class ChatStreamController extends Controller
     public function __invoke(ChatStreamRequest $request, Chat $chat): StreamedResponse
     {
         $userMessage = $request->string('message')->trim()->value();
-        $model = $request->enum('model', ModelName::class, ModelName::GEMINI_2_0_FLASH_LITE);
+        $model = $request->enum('model', ModelName::class, ModelName::GPT_4_1_NANO);
 
         $chat->messages()->create([
             'role' => 'user',
@@ -36,12 +36,13 @@ final class ChatStreamController extends Controller
         return Response::stream(function () use ($chat, $messages, $model): Generator {
             $assistantContent = '';
             try {
-                $prism = Prism::text()
+                $response = Prism::text()
                     ->withSystemPrompt(view('prompts.system'))
                     ->using($model->getProvider(), $model->value)
-                    ->withMessages($messages);
+                    ->withMessages($messages)
+                    ->asStream();
 
-                foreach ($prism->asStream() as $chunk) {
+                foreach ($response as $chunk) {
                     if ($chunk->chunkType === ChunkType::Text) {
                         $assistantContent .= $chunk->text;
                         yield $chunk->text;
@@ -69,7 +70,7 @@ final class ChatStreamController extends Controller
         return $chat->messages()
             ->orderBy('created_at')
             ->get()
-            ->map(fn (Message $message): \Prism\Prism\ValueObjects\Messages\UserMessage|\Prism\Prism\ValueObjects\Messages\AssistantMessage => match ($message->role) {
+            ->map(fn (Message $message): UserMessage|\Prism\Prism\ValueObjects\Messages\AssistantMessage => match ($message->role) {
                 'user' => new UserMessage(content: $message->parts),
                 'assistant' => new AssistantMessage(content: $message->parts),
             })

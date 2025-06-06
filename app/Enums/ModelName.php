@@ -8,8 +8,10 @@ use Prism\Prism\Enums\Provider;
 
 enum ModelName: string
 {
-    case GEMINI_2_0_FLASH_LITE = 'gemini-2.0-flash-lite';
-    case GEMINI_2_0_FLASH = 'gemini-2.0-flash';
+    // case GEMINI_2_0_FLASH_LITE = 'gemini-2.0-flash-lite';
+    // case GEMINI_2_0_FLASH = 'gemini-2.0-flash';
+    case GPT_4O_MINI = 'gpt-4o-mini';
+    case GPT_4_1_NANO = 'gpt-4.1-nano';
 
     /**
      * Get all models as an array for frontend consumption
@@ -25,24 +27,24 @@ enum ModelName: string
     public function getName(): string
     {
         return match ($this) {
-            self::GEMINI_2_0_FLASH => 'Gemini 2.0 Flash',
-            self::GEMINI_2_0_FLASH_LITE => 'Gemini 2.0 Flash Lite',
+            self::GPT_4O_MINI => 'GPT-4o Mini',
+            self::GPT_4_1_NANO => 'GPT-4.1 Nano',
         };
     }
 
     public function getDescription(): string
     {
         return match ($this) {
-            self::GEMINI_2_0_FLASH => 'Cheapest model, best for smarter tasks',
-            self::GEMINI_2_0_FLASH_LITE => 'Cheapest model, best for simpler tasks',
+            self::GPT_4O_MINI => 'Cheapest model, best for smarter tasks',
+            self::GPT_4_1_NANO => 'Cheapest model, best for simpler tasks',
         };
     }
 
     public function getProvider(): Provider
     {
         return match ($this) {
-            self::GEMINI_2_0_FLASH => Provider::Gemini,
-            self::GEMINI_2_0_FLASH_LITE => Provider::Gemini,
+            self::GPT_4O_MINI => Provider::OpenAI,
+            self::GPT_4_1_NANO => Provider::OpenAI,
         };
     }
 

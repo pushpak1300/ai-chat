@@ -93,7 +93,7 @@ cp .env.example .env
 
 The application uses Shadcn components with TailwindCSS for styling. To customize the theme:
 
-1. Visit [tweacn.com](https://tweacn.com) to generate custom CSS variables
+1. Visit [tweakcn.com](https://tweakcn.com) to generate custom CSS variables
 2. Update the CSS variables in `resources/css/app.css`
 3. The changes will automatically apply to all Shadcn components
 

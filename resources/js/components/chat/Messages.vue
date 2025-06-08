@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { Chunk, Message as MessageType } from '@/types'
 import { useJsonStream } from '@laravel/stream-vue'
-import { onMounted, toRef, watch } from 'vue'
+import { useScroll } from '@vueuse/core'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import Greeting from '@/components/chat/Greeting.vue'
 import Message from '@/components/chat/Message.vue'
 import ThinkingMessage from '@/components/chat/ThinkingMessage.vue'
-import { useMessageScroll } from '@/composables/useMessageScroll'
 
 const props = defineProps<{
   chatId?: string
@@ -20,24 +20,43 @@ const emit = defineEmits<{
 
 const { isFetching, isStreaming } = useJsonStream<Chunk>(`stream/${props.chatId}`, { id: props.streamId })
 
-const {
-  containerRef,
-  isAtBottom,
-  hasSentMessage,
-  scrollToBottomInstant,
-  scrollToBottomIfNeeded,
-} = useMessageScroll(toRef(props, 'messages'), isStreaming)
+const containerRef = ref<HTMLElement>()
+// @ts-expect-error - containerRef is not typed (for some reason)
+const { y, arrivedState } = useScroll(containerRef, { behavior: 'auto' })
+const isAtBottom = computed(() => arrivedState.bottom)
+
+function scrollToBottom() {
+  if (!containerRef.value)
+    return
+
+  const maxScrollTop = containerRef.value.scrollHeight - containerRef.value.clientHeight
+  y.value = maxScrollTop
+}
+
+watch(() => props.messages.length, (newLength, oldLength) => {
+  if (newLength > oldLength && (isAtBottom.value || newLength === 1)) {
+    nextTick(scrollToBottom)
+  }
+})
+
+watch(() => props.messages[props.messages.length - 1]?.parts, () => {
+  if (isAtBottom.value && isStreaming.value) {
+    nextTick(scrollToBottom)
+  }
+}, { flush: 'post' })
 
 watch(isAtBottom, (newValue) => {
   emit('updateIsAtBottom', newValue)
 })
 
 onMounted(() => {
-  scrollToBottomIfNeeded()
+  if (props.messages.length > 0) {
+    nextTick(scrollToBottom)
+  }
 })
 
 defineExpose({
-  scrollToBottom: scrollToBottomInstant,
+  scrollToBottom,
 })
 </script>
 
@@ -59,7 +78,7 @@ defineExpose({
           :chat-id="chatId"
           :is-loading="isStreaming"
           :is-readonly="isReadonly"
-          :requires-scroll-padding="hasSentMessage && index === messages.length - 1"
+          :requires-scroll-padding="index === messages.length - 1"
         />
 
         <ThinkingMessage

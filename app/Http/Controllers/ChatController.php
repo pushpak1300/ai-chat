@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\StoreChatRequest;
 use App\Http\Requests\UpdateChatRequest;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 final class ChatController extends Controller
 {
@@ -25,10 +24,14 @@ final class ChatController extends Controller
      */
     public function index(): Response
     {
-        $chatsHistory = Auth::user()->chats()->orderBy('updated_at', 'desc')->paginate(25);
+        $chatHistory = null;
+
+        if (Auth::check()) {
+            $chatHistory = Auth::user()->chats()->orderBy('updated_at', 'desc')->paginate(25);
+        }
 
         return Inertia::render('Chat/Index', [
-            'chatHistory' => Inertia::deepMerge($chatsHistory),
+            'chatHistory' => Inertia::deepMerge($chatHistory),
         ]);
     }
 
@@ -50,8 +53,11 @@ final class ChatController extends Controller
      */
     public function show(Chat $chat): Response
     {
-        /** @var LengthAwarePaginator<Chat> $chatHistory */
-        $chatHistory = Auth::user()->chats()->orderBy('updated_at', 'desc')->paginate(25);
+        $chatHistory = null;
+
+        if (Auth::check()) {
+            $chatHistory = Auth::user()->chats()->orderBy('updated_at', 'desc')->paginate(25);
+        }
 
         return Inertia::render('Chat/Show', [
             'chat' => fn () => $chat->load('messages'),

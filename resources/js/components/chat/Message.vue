@@ -53,7 +53,7 @@ const isAssistantMessage = props.message.role === Role.ASSISTANT
         </div>
 
         <div
-          class="flex flex-col gap-2 md:gap-4 w-full"
+          class="flex flex-col gap-2 w-full"
           :class="[
             {
               'min-h-96': isAssistantMessage && requiresScrollPadding,

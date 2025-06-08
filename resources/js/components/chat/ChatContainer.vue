@@ -56,6 +56,7 @@ defineExpose({
         :attachments="attachments"
         :messages="messages"
         :is-at-bottom="isAtBottom"
+        :is-readonly="isReadonly"
         @append="$emit('append', $event)"
         @stop="$emit('stop')"
         @handle-submit="$emit('handleSubmit')"

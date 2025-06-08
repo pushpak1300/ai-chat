@@ -25,6 +25,12 @@ describe('ChatPolicy', function (): void {
 
             expect($result)->toBeTrue();
         });
+
+        it('allows unauthenticated users to view any chats', function (): void {
+            $result = $this->policy->viewAny(null);
+
+            expect($result)->toBeTrue();
+        });
     });
 
     describe('view', function (): void {
@@ -45,6 +51,24 @@ describe('ChatPolicy', function (): void {
 
             expect($result)->toBeFalse();
         });
+
+        it('allows unauthenticated users to view public chats', function (): void {
+            $result = $this->policy->view(null, $this->publicChat);
+
+            expect($result)->toBeTrue();
+        });
+
+        it('prevents unauthenticated users from viewing private chats', function (): void {
+            $result = $this->policy->view(null, $this->ownedChat);
+
+            expect($result)->toBeFalse();
+        });
+
+        it('prevents unauthenticated users from viewing private chats of others', function (): void {
+            $result = $this->policy->view(null, $this->otherUserChat);
+
+            expect($result)->toBeFalse();
+        });
     });
 
     describe('create', function (): void {
@@ -52,6 +76,12 @@ describe('ChatPolicy', function (): void {
             $result = $this->policy->create($this->user);
 
             expect($result)->toBeTrue();
+        });
+
+        it('prevents unauthenticated user from creating a chat', function (): void {
+            $result = $this->policy->create(null);
+
+            expect($result)->toBeFalse();
         });
     });
 

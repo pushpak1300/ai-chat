@@ -12,7 +12,7 @@ final class ChatPolicy
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(): bool
+    public function viewAny(?User $user): bool
     {
         return true;
     }
@@ -20,17 +20,21 @@ final class ChatPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Chat $chat): bool
+    public function view(?User $user, Chat $chat): bool
     {
+        if (!$user instanceof \App\Models\User) {
+            return $chat->visibility === 'public';
+        }
+
         return $user->id === $chat->user_id || $chat->visibility === 'public';
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(): bool
+    public function create(?User $user): bool
     {
-        return true;
+        return $user instanceof \App\Models\User;
     }
 
     /**

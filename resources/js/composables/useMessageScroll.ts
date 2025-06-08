@@ -1,5 +1,6 @@
+import type { Ref } from 'vue'
 import type { Message } from '@/types'
-import { nextTick, ref, watch, type Ref } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import { useScrollToBottom } from '@/composables/useScrollToBottom'
 
 export function useMessageScroll(messages: Ref<Message[]>, isStreaming: Ref<boolean>) {

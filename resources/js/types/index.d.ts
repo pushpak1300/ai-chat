@@ -4,7 +4,7 @@ import type { Config } from 'ziggy-js'
 import type { ContentType, Role, Visibility } from './enum'
 
 export interface Auth {
-  user: User
+  user?: User
 }
 
 export interface BreadcrumbItem {

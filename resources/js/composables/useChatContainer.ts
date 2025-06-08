@@ -1,5 +1,4 @@
-import type { Message } from '@/types'
-import { ref, type Ref } from 'vue'
+import { ref } from 'vue'
 
 export function useChatContainer() {
   const isAtBottom = ref(false)

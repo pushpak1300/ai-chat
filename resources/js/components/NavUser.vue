@@ -1,15 +1,23 @@
 <script setup lang="ts">
-import type { SharedData, User } from '@/types'
-import { usePage } from '@inertiajs/vue3'
 import { ChevronsUpDown } from 'lucide-vue-next'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar'
 import UserInfo from '@/components/UserInfo.vue'
+import { useAuth } from '@/composables/useAuth'
 import UserMenuContent from './UserMenuContent.vue'
 
-const page = usePage<SharedData>()
-const user = page.props.auth.user as User
+const { user } = useAuth()
 const { isMobile, state } = useSidebar()
+
+const guestUser = {
+  id: 0,
+  name: 'Guest User',
+  email: '',
+  avatar: '',
+  email_verified_at: null,
+  created_at: '',
+  updated_at: '',
+}
 </script>
 
 <template>
@@ -18,7 +26,7 @@ const { isMobile, state } = useSidebar()
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <SidebarMenuButton size="lg" class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-            <UserInfo :user="user" />
+            <UserInfo :user="user ?? guestUser" />
             <ChevronsUpDown class="ml-auto size-4" />
           </SidebarMenuButton>
         </DropdownMenuTrigger>
@@ -28,7 +36,7 @@ const { isMobile, state } = useSidebar()
           align="end"
           :side-offset="4"
         >
-          <UserMenuContent :user="user" />
+          <UserMenuContent :user="user ?? guestUser" />
         </DropdownMenuContent>
       </DropdownMenu>
     </SidebarMenuItem>

@@ -10,6 +10,7 @@ import StopButton from '@/components/chat/StopButton.vue'
 import SuggestedActions from '@/components/chat/SuggestedActions.vue'
 import Button from '@/components/ui/button/Button.vue'
 import Textarea from '@/components/ui/textarea/Textarea.vue'
+import { useAuth } from '@/composables/useAuth'
 import { useChatInput } from '@/composables/useChatInput'
 
 const props = defineProps<{
@@ -18,6 +19,7 @@ const props = defineProps<{
   attachments: Array<string>
   messages: Array<Message>
   isAtBottom: boolean
+  isReadonly?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -26,6 +28,8 @@ const emit = defineEmits<{
   handleSubmit: []
   scrollToBottom: []
 }>()
+
+const { isGuest } = useAuth()
 
 const { input } = useChatInput()
 const { isFetching, isStreaming } = useStream(`stream/${props.chatId}`, { id: props.streamId })
@@ -50,6 +54,11 @@ function adjustHeight() {
 }
 
 function handleKeyDown(event: KeyboardEvent) {
+  if (props.isReadonly || isGuest) {
+    event.preventDefault()
+    return
+  }
+
   if (
     event.key === 'Enter'
     && !event.shiftKey
@@ -67,7 +76,7 @@ function handleKeyDown(event: KeyboardEvent) {
 }
 
 function submitForm() {
-  if (!canSendMessage.value) {
+  if (!canSendMessage.value || props.isReadonly || isGuest) {
     return
   }
 
@@ -108,7 +117,7 @@ watch(() => isStreaming.value, (newValue, oldValue) => {
     </AnimatePresence>
 
     <SuggestedActions
-      v-if="messages.length === 0 && attachments.length === 0 && uploadQueue.length === 0"
+      v-if="messages.length === 0 && attachments.length === 0 && uploadQueue.length === 0 && !isReadonly && !isGuest"
       @append="(message) => emit('append', message)"
     />
 
@@ -125,11 +134,11 @@ watch(() => isStreaming.value, (newValue, oldValue) => {
     </div>
 
     <Textarea
+      v-if="!isReadonly && !isGuest"
       ref="textareaRef"
       :model-value="input"
       data-testid="multimodal-input"
-      placeholder="Send a message..."
-      :disabled="!canSendMessage"
+      :disabled="!canSendMessage || isReadonly"
       class="min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
       rows="2"
       @update:model-value="input = $event"
@@ -137,9 +146,9 @@ watch(() => isStreaming.value, (newValue, oldValue) => {
     />
 
     <div class="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
-      <StopButton v-if="isStreaming" @stop="$emit('stop')" />
+      <StopButton v-if="isStreaming && !isReadonly && !isGuest" @stop="$emit('stop')" />
       <SendButton
-        v-else
+        v-else-if="!isReadonly && !isGuest"
         :upload-queue="uploadQueue"
         :is-processing="!canSendMessage"
         @submit="submitForm"

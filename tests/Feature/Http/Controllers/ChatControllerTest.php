@@ -61,12 +61,16 @@ describe('ChatController', function (): void {
                 );
         });
 
-        it('requires authentication', function (): void {
+        it('allows unauthenticated users to view index page with no chat history', function (): void {
             $this->post(route('logout'));
 
             $response = $this->get(route('chats.index'));
 
-            $response->assertRedirect(route('login'));
+            $response->assertOk()
+                ->assertInertia(
+                    fn ($page) => $page
+                        ->where('chatHistory', null)
+                );
         });
     });
 
@@ -162,6 +166,30 @@ describe('ChatController', function (): void {
         it('denies access to private chats from other users', function (): void {
             $otherUser = User::factory()->create();
             $chat = Chat::factory()->for($otherUser)->create(['visibility' => 'private']);
+
+            $response = $this->get(route('chats.show', $chat));
+
+            $response->assertForbidden();
+        });
+
+        it('allows unauthenticated users to view public chats', function (): void {
+            $this->post(route('logout'));
+            $otherUser = User::factory()->create();
+            $chat = Chat::factory()->for($otherUser)->create(['visibility' => 'public']);
+
+            $response = $this->get(route('chats.show', $chat));
+
+            $response->assertOk()
+                ->assertInertia(
+                    fn ($page) => $page
+                        ->where('chat.id', $chat->id)
+                        ->where('chatHistory', null)
+                );
+        });
+
+        it('denies unauthenticated users access to private chats', function (): void {
+            $this->post(route('logout'));
+            $chat = Chat::factory()->for($this->user)->create(['visibility' => 'private']);
 
             $response = $this->get(route('chats.show', $chat));
 

@@ -87,12 +87,13 @@ final class ChatStreamController extends Controller
             ->orderBy('created_at')
             ->get()
             ->map(fn (Message $message): UserMessage|\Prism\Prism\ValueObjects\Messages\AssistantMessage => match ($message->role) {
-                'user' => new UserMessage(content: $message->parts['text']),
-                'assistant' => new AssistantMessage(content: $message->parts['text']),
+                'user' => new UserMessage(content: $message->parts['text'] ?? ''),
+                'assistant' => new AssistantMessage(content: $message->parts['text'] ?? ''),
             })
             ->toArray();
     }
 
+    /** @todo https://github.com/prism-php/prism/pull/395 */
     private function mapChunkTypeToString(ChunkType $chunkType): string
     {
         return match ($chunkType) {

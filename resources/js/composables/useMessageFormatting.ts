@@ -1,5 +1,6 @@
+import type { ComputedRef } from 'vue'
 import type { Message, MessageChunks } from '@/types'
-import { computed, type ComputedRef } from 'vue'
+import { computed } from 'vue'
 import { ChunkType } from '@/types/enum'
 
 export function useMessageFormatting(message: Message): {

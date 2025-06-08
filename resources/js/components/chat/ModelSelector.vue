@@ -41,13 +41,13 @@ function selectModel(model: Model) {
       >
         <div class="flex flex-col gap-1 items-start">
           <div class="flex items-center gap-2">
-            <span>{{ model.name }}</span>
+            <span>{{ model?.name }}</span>
           </div>
           <div class="text-xs text-muted-foreground">
-            {{ model.description }}
+            {{ model?.description }}
           </div>
         </div>
-        <Icon v-if="model.id === selectedModel?.id" icon="lucide:check-circle" class="ml-auto" />
+        <Icon v-if="model?.id === selectedModel?.id" icon="lucide:check-circle" class="ml-auto" />
       </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>

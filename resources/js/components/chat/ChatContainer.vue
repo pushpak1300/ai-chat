@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { Message } from '@/types/index'
+import { ref } from 'vue'
 import Messages from '@/components/chat/Messages.vue'
 import MultimodalInput from '@/components/chat/MultimodalInput.vue'
-import { useChatContainer } from '@/composables/useChatContainer'
 
 withDefaults(defineProps<{
   messages?: Array<Message>
@@ -24,12 +24,16 @@ defineEmits<{
   handleSubmit: []
 }>()
 
-const {
-  isAtBottom,
-  messagesRef,
-  handleScrollToBottom,
-  updateIsAtBottom,
-} = useChatContainer()
+const isAtBottom = ref(false)
+const messagesRef = ref<any>()
+
+function handleScrollToBottom(): void {
+  messagesRef.value?.scrollToBottom()
+}
+
+function updateIsAtBottom(value: boolean): void {
+  isAtBottom.value = value
+}
 
 defineExpose({
   handleScrollToBottom,

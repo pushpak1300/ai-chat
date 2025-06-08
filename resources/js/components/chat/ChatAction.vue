@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
-import { useForm } from '@inertiajs/vue3'
+import { router, useForm } from '@inertiajs/vue3'
 import { inject } from 'vue'
 import {
   AlertDialog,
@@ -23,7 +23,12 @@ function deleteChat(chatId?: string) {
     return
   }
 
-  deleteForm.delete(route('chats.destroy', chatId))
+  deleteForm.delete(route('chats.destroy', chatId), {
+    preserveScroll: true,
+    onSuccess: () => {
+      router.flushAll()
+    },
+  })
 }
 </script>
 

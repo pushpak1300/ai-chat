@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import type { Message, MessageChunks } from '@/types'
+import type { Message } from '@/types'
 import { Icon } from '@iconify/vue'
 import { AnimatePresence, motion } from 'motion-v'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
+import { useMessageFormatting } from '@/composables/useMessageFormatting'
 import { ChunkType, Role } from '@/types/enum'
 import MarkdownRenderer from './MarkdownRenderer.vue'
 import MessageActions from './MessageActions.vue'
@@ -17,23 +18,10 @@ const props = defineProps<{
 }>()
 
 const mode = ref<'view' | 'edit'>('view')
+const { messageParts } = useMessageFormatting(props.message)
 
-const messageParts = computed<MessageChunks[]>(() => {
-  const parts: MessageChunks[] = []
-  if (props.message.parts[ChunkType.THINKING]) {
-    parts.push({
-      [ChunkType.THINKING]: props.message.parts[ChunkType.THINKING],
-    })
-  }
-
-  if (props.message.parts[ChunkType.TEXT]) {
-    parts.push({
-      [ChunkType.TEXT]: props.message.parts[ChunkType.TEXT],
-    })
-  }
-
-  return parts
-})
+const isUserMessage = props.message.role === Role.USER
+const isAssistantMessage = props.message.role === Role.ASSISTANT
 </script>
 
 <template>
@@ -56,7 +44,7 @@ const messageParts = computed<MessageChunks[]>(() => {
         ]"
       >
         <div
-          v-if="message.role === Role.ASSISTANT"
+          v-if="isAssistantMessage"
           class="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background"
         >
           <div class="translate-y-px">
@@ -68,7 +56,7 @@ const messageParts = computed<MessageChunks[]>(() => {
           class="flex flex-col gap-2 md:gap-4 w-full"
           :class="[
             {
-              'min-h-96': message.role === 'assistant' && requiresScrollPadding,
+              'min-h-96': isAssistantMessage && requiresScrollPadding,
             },
           ]"
         >
@@ -78,6 +66,7 @@ const messageParts = computed<MessageChunks[]>(() => {
               :content="part[ChunkType.THINKING]"
               :is-loading="isLoading"
             />
+
             <div
               v-else-if="part[ChunkType.TEXT]"
               class="flex flex-row gap-2 items-start"
@@ -88,12 +77,20 @@ const messageParts = computed<MessageChunks[]>(() => {
                 class="flex flex-col gap-4 min-w-0 overflow-hidden"
                 :class="[
                   {
-                    'bg-primary text-primary-foreground px-3 py-2 rounded-xl': message.role === 'user',
+                    'bg-primary text-primary-foreground px-3 py-2 rounded-xl': isUserMessage,
                   },
                 ]"
               >
                 <div v-if="part[ChunkType.TEXT]" class="w-full">
-                  <MarkdownRenderer :content="part[ChunkType.TEXT]" />
+                  <MarkdownRenderer
+                    v-if="isAssistantMessage"
+                    :content="part[ChunkType.TEXT]"
+                  />
+                  <div
+                    v-else
+                    class="whitespace-pre-wrap"
+                    v-text="part[ChunkType.TEXT]"
+                  />
                 </div>
 
                 <div v-else class="w-full text-muted-foreground italic">

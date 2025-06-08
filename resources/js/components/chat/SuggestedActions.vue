@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button'
 
 const emit = defineEmits<{
-  append: [message: any]
+  append: [message: string]
 }>()
 
 const suggestedActions = [
@@ -28,7 +28,7 @@ const suggestedActions = [
   },
 ]
 
-function handleActionClick(suggestedAction: any) {
+function handleActionClick(suggestedAction: { title: string, label: string, action: string }) {
   emit('append', suggestedAction.action)
 }
 </script>

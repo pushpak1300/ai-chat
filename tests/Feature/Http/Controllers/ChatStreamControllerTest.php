@@ -222,7 +222,6 @@ describe('ChatStreamController', function (): void {
 
         // Check that the response contains properly formatted JSON chunks
         $streamedContent = $response->streamedContent();
-        expect($streamedContent)->toContain('data: ');
         expect($streamedContent)->toContain('"chunkType":"text"');
         expect($streamedContent)->toContain('Response');
     });
@@ -380,7 +379,7 @@ describe('ChatStreamController', function (): void {
         expect($content)->toContain('Custom model response');
 
         $fake->assertCallCount(1);
-        $fake->assertRequest(function ($requests): true {
+        $fake->assertRequest(function (array $requests): true {
             expect($requests[0]->model())->toBe('gpt-4o-mini');
 
             return true;

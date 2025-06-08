@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Enums\ModelName;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -29,7 +27,7 @@ final class ChatStreamRequest extends FormRequest
     {
         return [
             'message' => 'required|string|max:255',
-            'model' => ['nullable', 'string', Rule::enum(ModelName::class)],
+            'model' => ['nullable', 'string'],
         ];
     }
 }

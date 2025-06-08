@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { Message } from '@/types/index'
-import { ref } from 'vue'
 import Messages from '@/components/chat/Messages.vue'
 import MultimodalInput from '@/components/chat/MultimodalInput.vue'
+import { useChatContainer } from '@/composables/useChatContainer'
 
 withDefaults(defineProps<{
   messages?: Array<Message>
@@ -14,7 +14,6 @@ withDefaults(defineProps<{
   messages: () => [],
   streamId: '',
   attachments: () => [],
-  votes: () => [],
   isReadonly: false,
   chatId: '',
 })
@@ -25,12 +24,12 @@ defineEmits<{
   handleSubmit: []
 }>()
 
-const isAtBottom = ref(false)
-const messagesRef = ref<InstanceType<typeof Messages>>()
-
-function handleScrollToBottom() {
-  messagesRef.value?.scrollToBottom()
-}
+const {
+  isAtBottom,
+  messagesRef,
+  handleScrollToBottom,
+  updateIsAtBottom,
+} = useChatContainer()
 
 defineExpose({
   handleScrollToBottom,
@@ -46,11 +45,11 @@ defineExpose({
         :stream-id="streamId"
         :messages="messages"
         :is-readonly="isReadonly"
-        @update-is-at-bottom="isAtBottom = $event"
+        @update-is-at-bottom="updateIsAtBottom"
       />
     </div>
 
-    <div class="flex-shrink-0 mx-auto w-full max-w-3xl px-2 sm:px-4 pb-2 sm:pb-4">
+    <div class="flex-shrink-0 mx-auto w-full max-w-3xl px-2 sm:px-4 pb-2 sm:pb-4 mt-2">
       <MultimodalInput
         :chat-id="chatId"
         :stream-id="streamId"

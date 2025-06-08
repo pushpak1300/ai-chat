@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import type { BreadcrumbItemType, Chat, ChatHistory, Chunk, Message, MessageChunks, Model } from '@/types'
+import type { BreadcrumbItemType, Chat, ChatHistory, MessageChunks, Model } from '@/types'
 import { Head, router } from '@inertiajs/vue3'
-import { useJsonStream } from '@laravel/stream-vue'
 import { useStorage } from '@vueuse/core'
 import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
 import ChatContainer from '@/components/chat/ChatContainer.vue'
 import { provideChatInput } from '@/composables/useChatInput'
+import { useChatMessages } from '@/composables/useChatMessages'
+import { useMessageStream } from '@/composables/useMessageStream'
 import { provideVisibility } from '@/composables/useVisibility'
 import { MODEL_KEY } from '@/constants/models'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { ChunkType, Role, Visibility } from '@/types/enum'
+import { ChunkType, Visibility } from '@/types/enum'
 
 const props = defineProps<{
   chatHistory?: ChatHistory
@@ -27,34 +28,23 @@ const breadcrumbs: BreadcrumbItemType[] = [
   },
 ]
 
-interface StreamParams {
-  message: string
-  model: string
-}
-
 const { input, clearInput } = provideChatInput()
 const initialVisibilityType = ref<Visibility>(initialVisibility.value)
 const selectedModel = useStorage<Model>(MODEL_KEY, props.availableModels[0])
-const messages = ref<Message[]>([...(props.chat?.messages?.map(message => ({
-  ...message,
-  attachments: typeof message.attachments === 'string' ? JSON.parse(message.attachments) : message.attachments,
-})) || [])])
 const chatContainerRef = ref<InstanceType<typeof ChatContainer>>()
 
 const { visibility } = provideVisibility(initialVisibility.value, initialVisibilityType)
+const {
+  messages,
+  addTextMessage,
+  scrollToBottom,
+  getLastMessage,
+  isLastMessageFromUser,
+} = useChatMessages(props.chat, chatContainerRef)
+
+const { isFetching, isStreaming, send, cancel, id } = useMessageStream(props.chat.id, messages, clearInput)
 
 provide('chatId', props.chat.id)
-
-watch(() => props.chat?.messages, (newMessages) => {
-  if (newMessages && newMessages.length > 0) {
-    messages.value = [...newMessages]
-    nextTick(() => {
-      if (chatContainerRef.value) {
-        chatContainerRef.value.handleScrollToBottom()
-      }
-    })
-  }
-}, { immediate: true, deep: true })
 
 function updateChatVisibility(newVisibility: Visibility): void {
   router.patch(
@@ -75,66 +65,13 @@ watch(visibility, (newVisibility, oldVisibility) => {
   }
 }, { immediate: false })
 
-const { isFetching, isStreaming, send, cancel, id } = useJsonStream<Chunk>(
-  route('chat.stream', { chat: props.chat.id }),
-  {
-    onData: (chunk: string) => {
-      try {
-        const chunkData = JSON.parse(chunk)
-
-        let currentMessage = messages.value[messages.value.length - 1]
-        if (!currentMessage || currentMessage.role !== Role.ASSISTANT) {
-          currentMessage = {
-            role: Role.ASSISTANT,
-            parts: {},
-          }
-          messages.value.push(currentMessage)
-        }
-
-        if (!currentMessage.parts[chunkData.chunkType]) {
-          currentMessage.parts[chunkData.chunkType] = ''
-        }
-        currentMessage.parts[chunkData.chunkType] += chunkData.content
-      }
-      catch (error) {
-        console.error('Failed to parse chunk:', error)
-      }
-    },
-    onError: (error: Error) => {
-      console.error('Stream error:', error)
-      nextTick(() => {
-        messages.value.push({
-          role: Role.ASSISTANT,
-          parts: {
-            [ChunkType.TEXT]: 'Sorry, there was an error processing your request. Please try again.',
-          },
-        })
-      })
-    },
-    onFinish: () => {
-      router.reload({
-        only: ['chatHistory', 'chat'],
-        async: true,
-      })
-      clearInput()
-    },
-  },
-)
-
 function sendMessage(messageContent: MessageChunks): void {
-  const userMessage: Message = {
-    role: Role.USER,
-    parts: messageContent,
-  }
+  addTextMessage(messageContent[ChunkType.TEXT] || '')
 
-  messages.value.push(userMessage)
-
-  const params: StreamParams = {
+  send({
     message: messageContent[ChunkType.TEXT] || '',
     model: selectedModel.value.id,
-  }
-
-  send(params)
+  })
 }
 
 async function handleSubmit(): Promise<void> {
@@ -147,23 +84,13 @@ async function handleSubmit(): Promise<void> {
   clearInput()
 
   await nextTick(() => {
-    const userMessage: Message = {
-      role: Role.USER,
-      parts: {
-        [ChunkType.TEXT]: trimmedInput,
-      },
-      attachments: [],
-    }
-
-    messages.value.push(userMessage)
+    addTextMessage(trimmedInput)
   })
 
-  const params: StreamParams = {
+  send({
     message: trimmedInput,
     model: selectedModel.value.id,
-  }
-
-  send(params)
+  })
 }
 
 function stop(): void {
@@ -174,22 +101,20 @@ function stop(): void {
 
 onMounted(() => {
   if (input.value.trim()) {
-    sendMessage({
-      [ChunkType.TEXT]: input.value.trim(),
-    })
+    sendMessage({ [ChunkType.TEXT]: input.value.trim() })
     clearInput()
     return
   }
 
-  const lastMessage = messages.value[messages.value.length - 1]
-  if (lastMessage && lastMessage.role === Role.USER) {
+  const lastMessage = getLastMessage()
+  if (lastMessage && isLastMessageFromUser()) {
     sendMessage(lastMessage.parts)
     clearInput()
   }
 
   nextTick(() => {
-    if (messages.value.length > 0 && chatContainerRef.value) {
-      chatContainerRef.value.handleScrollToBottom()
+    if (messages.value.length > 0) {
+      scrollToBottom()
     }
   })
 })

@@ -22,7 +22,7 @@ final class ChatStreamController extends Controller
 {
     public function __invoke(ChatStreamRequest $request, Chat $chat): StreamedResponse
     {
-        $userMessage = $request->string('message')->trim()->value();
+        $userMessage = mb_trim($request->string('message')->trim()->value());
         $model = $request->enum('model', ModelName::class, ModelName::GPT_4_1_NANO);
 
         $chat->messages()->create([
@@ -53,12 +53,13 @@ final class ChatStreamController extends Controller
 
                     $chunkTypeString = $this->mapChunkTypeToString($chunk->chunkType);
 
-                    if (!isset($parts[$chunkTypeString])) {
+                    if (! isset($parts[$chunkTypeString])) {
                         $parts[$chunkTypeString] = '';
                     }
+
                     $parts[$chunkTypeString] .= $chunk->text;
 
-                    yield 'data: ' . json_encode($chunkData) . "\n\n";
+                    yield json_encode($chunkData)."\n";
                 }
 
                 if ($parts !== []) {
@@ -72,16 +73,12 @@ final class ChatStreamController extends Controller
 
             } catch (Throwable $throwable) {
                 Log::error("Chat stream error for chat {$chat->id}: ".$throwable->getMessage());
-                yield 'data: ' . json_encode([
+                yield json_encode([
                     'chunkType' => 'error',
                     'content' => 'Stream failed',
-                ]) . "\n\n";
+                ])."\n";
             }
-        }, 200, [
-            'Content-Type' => 'text/event-stream',
-            'Cache-Control' => 'no-cache',
-            'Connection' => 'keep-alive',
-        ]);
+        });
     }
 
     private function buildConversationHistory(Chat $chat): array

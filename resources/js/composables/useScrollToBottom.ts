@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 export function useScrollToBottom() {
   const containerRef = ref<HTMLElement>()
 
+  // @ts-expect-error - containerRef is not typed (for some reason)
   const { y, arrivedState, measure } = useScroll(containerRef, {
     behavior: 'auto',
   })

@@ -226,21 +226,15 @@ If you discover security vulnerabilities, please email [pushpak1300@gmail.com](m
 - Verify the provider is properly configured
 - Check browser console for JavaScript errors
 
-**Performance issues:**
-
-- Enable Redis for caching and sessions
-- Configure queue workers for background processing
-- Monitor API rate limits and usage quotas
 
 ### Getting Help
 
 - **Documentation**: [Prism PHP Documentation](https://prismphp.com/)
 - **Issues**: [GitHub Issues](https://github.com/pushpak1300/ai-chat/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/pushpak1300/ai-chat/discussions)
 
 ## Contributing
 
-Contributions are welcome! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+Contributions are welcome!
 
 ### Development Setup
 

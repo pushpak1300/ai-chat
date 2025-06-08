@@ -10,20 +10,13 @@ Prism Chat provides a solid foundation for building AI-powered chat applications
 
 ## Features
 
-- **Real-time AI Responses**: Stream AI responses as they're generated using Server-Sent Events (SSE)
+- **Real-time AI Responses**: Stream AI responses as they're generated
 - **Reasoning Support**: Built-in support for AI models with reasoning capabilities
-- **Multiple AI Providers**: Support for OpenAI, Anthropic, Google Gemini, Ollama, Groq, Mistral, DeepSeek, xAI, and VoyageAI
-- **Model Switching**: Easily switch between different AI models from the UI
+- **Multiple AI Providers**: Support for OpenAI, Anthropic, Google Gemini, Ollama, Groq, Mistral, DeepSeek, xAI, and VoyageAI 
 - **Authentication System**: Built-in user authentication and management
-- **Responsive UI**: Modern interface that works across all devices
 - **Appearance Settings**: Light/dark mode support with system preference detection
 - **Custom Theming**: Shadcn integration allows easy theme customization via CSS variables
 - **Chat Sharing**: Share conversations with other users
-- **Streaming**: Live response streaming with proper error handling
-- **Dynamic Routing**: Different stream URLs for authenticated vs anonymous users
-- **Message Persistence**: Completed responses are added to the message history
-- **Real-time Title Generation**: Event streams automatically update chat titles
-- **Error Handling**: Graceful fallbacks for API failures
 
 ## Tech Stack
 

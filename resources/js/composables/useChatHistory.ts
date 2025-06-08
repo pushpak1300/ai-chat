@@ -10,9 +10,19 @@ interface GroupedChatHistory {
   older: HistoryItem[]
 }
 
-export function useChatHistory(chatHistory: MaybeRef<ChatHistory>) {
+export function useChatHistory(chatHistory: MaybeRef<ChatHistory | null>) {
   const groupedChatHistory = computed((): GroupedChatHistory => {
     const history = unref(chatHistory)
+    if (!history) {
+      return {
+        today: [],
+        yesterday: [],
+        lastSevenDays: [],
+        lastThirtyDays: [],
+        older: [],
+      }
+    }
+
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000)
@@ -53,12 +63,12 @@ export function useChatHistory(chatHistory: MaybeRef<ChatHistory>) {
 
   const hasMorePages = computed(() => {
     const history = unref(chatHistory)
-    return history.next_page_url !== null
+    return history?.next_page_url !== null
   })
 
   const hasAnyHistory = computed(() => {
     const history = unref(chatHistory)
-    return history.data.length > 0
+    return (history?.data?.length ?? 0) > 0
   })
 
   return {

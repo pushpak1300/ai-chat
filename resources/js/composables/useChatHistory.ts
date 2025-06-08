@@ -1,5 +1,6 @@
+import type { MaybeRef } from 'vue'
 import type { ChatHistory, HistoryItem } from '@/types'
-import { computed } from 'vue'
+import { computed, unref } from 'vue'
 
 interface GroupedChatHistory {
   today: HistoryItem[]
@@ -9,8 +10,9 @@ interface GroupedChatHistory {
   older: HistoryItem[]
 }
 
-export function useChatHistory(chatHistory: ChatHistory) {
+export function useChatHistory(chatHistory: MaybeRef<ChatHistory>) {
   const groupedChatHistory = computed((): GroupedChatHistory => {
+    const history = unref(chatHistory)
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000)
@@ -25,7 +27,7 @@ export function useChatHistory(chatHistory: ChatHistory) {
       older: [],
     }
 
-    chatHistory.data.forEach((chat) => {
+    history.data.forEach((chat) => {
       const chatDate = new Date(chat.updated_at)
       const chatDateOnly = new Date(chatDate.getFullYear(), chatDate.getMonth(), chatDate.getDate())
 
@@ -49,9 +51,15 @@ export function useChatHistory(chatHistory: ChatHistory) {
     return groups
   })
 
-  const hasMorePages = computed(() => chatHistory.next_page_url !== null)
+  const hasMorePages = computed(() => {
+    const history = unref(chatHistory)
+    return history.next_page_url !== null
+  })
 
-  const hasAnyHistory = computed(() => chatHistory.data.length > 0)
+  const hasAnyHistory = computed(() => {
+    const history = unref(chatHistory)
+    return history.data.length > 0
+  })
 
   return {
     groupedChatHistory,

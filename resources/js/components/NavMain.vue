@@ -29,23 +29,7 @@ const props = withDefaults(defineProps<{
 
 const page = usePage()
 
-const chatHistoryData = computed(() => props.chatHistory || {
-  data: [],
-  current_page: 1,
-  next_page_url: null,
-  path: '',
-  per_page: 25,
-  from: 0,
-  to: 0,
-  total: 0,
-  first_page_url: '',
-  last_page: 1,
-  last_page_url: '',
-  prev_page_url: null,
-  links: [],
-})
-
-const { groupedChatHistory, hasMorePages, hasAnyHistory } = useChatHistory(chatHistoryData.value)
+const { groupedChatHistory, hasMorePages, hasAnyHistory } = useChatHistory(props.chatHistory)
 
 const { isGuest } = useAuth()
 
@@ -169,7 +153,7 @@ function isActiveChat(chatId: number) {
         v-if="hasMorePages"
         :params="{
           preserveUrl: true,
-          data: { page: chatHistoryData.current_page + 1 },
+          data: { page: props.chatHistory?.current_page + 1 },
           only: ['chatHistory'],
         }"
         :always="hasMorePages"

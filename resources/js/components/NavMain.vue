@@ -29,7 +29,7 @@ const props = withDefaults(defineProps<{
 
 const page = usePage()
 
-const { groupedChatHistory, hasMorePages, hasAnyHistory } = useChatHistory(props.chatHistory)
+const { groupedChatHistory, hasAnyHistory } = useChatHistory(props.chatHistory)
 
 const { isGuest } = useAuth()
 
@@ -150,13 +150,12 @@ function isActiveChat(chatId: number) {
       </SidebarGroup>
 
       <WhenVisible
-        v-if="hasMorePages"
+        v-if="chatHistory?.next_page_url"
         :params="{
           preserveUrl: true,
           data: { page: props.chatHistory?.current_page + 1 },
           only: ['chatHistory'],
         }"
-        :always="hasMorePages"
       >
         <template #fallback>
           <SidebarGroupLabel class="mt-2" role="status" aria-live="polite">

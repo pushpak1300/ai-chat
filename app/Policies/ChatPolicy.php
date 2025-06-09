@@ -22,7 +22,7 @@ final class ChatPolicy
      */
     public function view(?User $user, Chat $chat): bool
     {
-        if (!$user instanceof \App\Models\User) {
+        if (! $user instanceof User) {
             return $chat->visibility === 'public';
         }
 
@@ -34,7 +34,7 @@ final class ChatPolicy
      */
     public function create(?User $user): bool
     {
-        return $user instanceof \App\Models\User;
+        return $user instanceof User;
     }
 
     /**

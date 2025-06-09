@@ -27,4 +27,4 @@ yarn-error.log
 frankenphp
 frankenphp-worker.php
 
-.DS_Store
+**/.DS_Store

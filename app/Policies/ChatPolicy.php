@@ -12,9 +12,9 @@ final class ChatPolicy
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(): bool
+    public function viewAny(?User $user): bool
     {
-        return true;
+        return $user instanceof User || $user === null;
     }
 
     /**

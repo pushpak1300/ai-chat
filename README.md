@@ -12,7 +12,7 @@ Prism Chat provides a solid foundation for building AI-powered chat applications
 
 - **Real-time AI Responses**: Stream AI responses as they're generated
 - **Reasoning Support**: Built-in support for AI models with reasoning capabilities
-- **Multiple AI Providers**: Support for OpenAI, Anthropic, Google Gemini, Ollama, Groq, Mistral, DeepSeek, xAI, and VoyageAI 
+- **Multiple AI Providers**: Support for OpenAI, Anthropic, Google Gemini, Ollama, Groq, Mistral, DeepSeek, xAI, and VoyageAI
 - **Authentication System**: Built-in user authentication and management
 - **Appearance Settings**: Light/dark mode support with system preference detection
 - **Custom Theming**: Shadcn integration allows easy theme customization via CSS variables
@@ -218,7 +218,6 @@ If you discover security vulnerabilities, please email [pushpak1300@gmail.com](m
 - Confirm the model is added to `ModelName` enum
 - Verify the provider is properly configured
 - Check browser console for JavaScript errors
-
 
 ### Getting Help
 

@@ -15,7 +15,7 @@ enum ModelName: string
     case O4_MINI = 'o4-mini';
 
     /**
-     * Get all models as an array for frontend consumption
+     * @return array{id: string, name: string, description: string, provider: string}[]
      */
     public static function getAvailableModels(): array
     {
@@ -52,6 +52,9 @@ enum ModelName: string
         };
     }
 
+    /**
+     * @return array{id: string, name: string, description: string, provider: string}
+     */
     public function toArray(): array
     {
         return [

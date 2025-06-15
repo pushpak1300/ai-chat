@@ -19,9 +19,6 @@ final class ChatController extends Controller
         $this->authorizeResource(Chat::class, 'chat');
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(): Response
     {
         $chatHistory = null;
@@ -35,9 +32,6 @@ final class ChatController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreChatRequest $request): RedirectResponse
     {
         $chat = Auth::user()->chats()->create([
@@ -48,9 +42,6 @@ final class ChatController extends Controller
         return to_route('chats.show', ['chat' => $chat]);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Chat $chat): Response
     {
         $chatHistory = null;
@@ -97,9 +88,6 @@ final class ChatController extends Controller
         return to_route('chats.show', ['chat' => $chat]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Chat $chat): RedirectResponse
     {
         $chat->messages()->delete();

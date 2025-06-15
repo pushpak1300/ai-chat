@@ -22,13 +22,13 @@ final class ChatStreamController extends Controller
 {
     public function __invoke(ChatStreamRequest $request, Chat $chat): StreamedResponse
     {
-        $userMessage = mb_trim($request->string('message')->trim()->value());
+        $userMessage = $request->string('message')->trim()->value();
         $model = $request->enum('model', ModelName::class, ModelName::GPT_4_1_NANO);
 
         $chat->messages()->create([
             'role' => 'user',
             'parts' => [
-                $this->mapChunkTypeToString(ChunkType::Text) => $userMessage,
+                ChunkType::Text->value => $userMessage,
             ],
             'attachments' => '[]',
         ]);
@@ -47,17 +47,15 @@ final class ChatStreamController extends Controller
 
                 foreach ($response as $chunk) {
                     $chunkData = [
-                        'chunkType' => $this->mapChunkTypeToString($chunk->chunkType),
+                        'chunkType' => $chunk->chunkType->value,
                         'content' => $chunk->text,
                     ];
 
-                    $chunkTypeString = $this->mapChunkTypeToString($chunk->chunkType);
-
-                    if (! isset($parts[$chunkTypeString])) {
-                        $parts[$chunkTypeString] = '';
+                    if (! isset($parts[$chunk->chunkType->value])) {
+                        $parts[$chunk->chunkType->value] = '';
                     }
 
-                    $parts[$chunkTypeString] .= $chunk->text;
+                    $parts[$chunk->chunkType->value] .= $chunk->text;
 
                     yield json_encode($chunkData)."\n";
                 }
@@ -86,20 +84,10 @@ final class ChatStreamController extends Controller
         return $chat->messages()
             ->orderBy('created_at')
             ->get()
-            ->map(fn (Message $message): UserMessage|\Prism\Prism\ValueObjects\Messages\AssistantMessage => match ($message->role) {
+            ->map(fn (Message $message): UserMessage|AssistantMessage => match ($message->role) {
                 'user' => new UserMessage(content: $message->parts['text'] ?? ''),
                 'assistant' => new AssistantMessage(content: $message->parts['text'] ?? ''),
             })
             ->toArray();
-    }
-
-    /** @todo https://github.com/prism-php/prism/pull/395 */
-    private function mapChunkTypeToString(ChunkType $chunkType): string
-    {
-        return match ($chunkType) {
-            ChunkType::Text => 'text',
-            ChunkType::Thinking => 'thinking',
-            ChunkType::Meta => 'meta',
-        };
     }
 }

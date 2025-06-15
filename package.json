@@ -7,8 +7,8 @@
     "dev": "vite",
     "format": "prettier --write resources/",
     "format:check": "prettier --check resources/",
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix ."
+    "lint": "bunx oxlint@latest && eslint .",
+    "lint:fix": "bunx oxlint@latest && eslint --fix ."
   },
   "dependencies": {
     "@iconify/vue": "^5.0.0",
@@ -50,6 +50,7 @@
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-format": "^1.0.1",
+    "eslint-plugin-oxlint": "^1.1.0",
     "eslint-plugin-vue": "^9.33.0",
     "typescript-eslint": "^8.34.0",
     "vue-tsc": "^2.2.10"

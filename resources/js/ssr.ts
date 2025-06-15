@@ -30,7 +30,7 @@ createServer(page =>
 
       // Make route function available globally for SSR...
       if (typeof window === 'undefined') {
-        global.route = route // eslint-disable-line no-restricted-globals
+        globalThis.route = route
       }
 
       app.use(plugin)

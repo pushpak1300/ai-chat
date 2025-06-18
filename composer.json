@@ -12,6 +12,7 @@
     "php": "^8.3",
     "inertiajs/inertia-laravel": "^2.0",
     "laravel/framework": "^12.0",
+    "laravel/nightwatch": "^1.7",
     "laravel/octane": "^2.9",
     "laravel/sanctum": "^4.1",
     "laravel/tinker": "^2.10.1",

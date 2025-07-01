@@ -24,13 +24,14 @@ final class ChatStreamController extends Controller
     {
         $userMessage = $request->string('message')->trim()->value();
         $model = $request->enum('model', ModelName::class, ModelName::GPT_4_1_NANO);
+        $attachments = $request->input('attachments', []);
 
         $chat->messages()->create([
             'role' => 'user',
             'parts' => [
                 ChunkType::Text->value => $userMessage,
             ],
-            'attachments' => '[]',
+            'attachments' => $attachments,
         ]);
 
         $messages = $this->buildConversationHistory($chat);

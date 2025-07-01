@@ -28,6 +28,8 @@ final class ChatStreamRequest extends FormRequest
         return [
             'message' => 'required|string|max:255',
             'model' => ['nullable', 'string'],
+            'attachments' => ['nullable', 'array'],
+            'attachments.*' => ['string'], // Array of filenames
         ];
     }
 }

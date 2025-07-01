@@ -81,6 +81,9 @@ async function handleSubmit(): Promise<void> {
     return
   }
 
+  // Get attachments from the multimodal input
+  const attachments = chatContainerRef.value?.multimodalInputRef?.getAttachmentFilenames() || []
+
   clearInput()
 
   await nextTick(() => {
@@ -90,7 +93,11 @@ async function handleSubmit(): Promise<void> {
   send({
     message: trimmedInput,
     model: selectedModel.value.id,
+    attachments,
   })
+
+  // Clear uploads after sending
+  chatContainerRef.value?.multimodalInputRef?.clearUploads()
 }
 
 function stop(): void {

@@ -26,6 +26,7 @@ defineEmits<{
 
 const isAtBottom = ref(false)
 const messagesRef = ref<any>()
+const multimodalInputRef = ref<any>()
 
 function handleScrollToBottom(): void {
   messagesRef.value?.scrollToBottom()
@@ -37,6 +38,7 @@ function updateIsAtBottom(value: boolean): void {
 
 defineExpose({
   handleScrollToBottom,
+  multimodalInputRef,
 })
 </script>
 
@@ -55,6 +57,7 @@ defineExpose({
 
     <div class="flex-shrink-0 mx-auto w-full max-w-3xl px-2 sm:px-4 pb-2 sm:pb-4 mt-2">
       <MultimodalInput
+        ref="multimodalInputRef"
         :chat-id="chatId"
         :stream-id="streamId"
         :attachments="attachments"

@@ -7,6 +7,7 @@ import { ChunkType, Role } from '@/types/enum'
 interface StreamParams {
   message: string
   model: string
+  attachments?: string[]
 }
 
 export function useMessageStream(chatId: string, messages: Ref<Message[]>, onComplete?: () => void) {

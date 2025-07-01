@@ -100,6 +100,21 @@ const isAssistantMessage = props.message.role === Role.ASSISTANT
             </div>
           </template>
 
+          <!-- Display attachments if they exist -->
+          <div 
+            v-if="message.attachments && message.attachments.length > 0"
+            class="flex flex-wrap gap-2 mt-2"
+          >
+            <div
+              v-for="attachment in message.attachments"
+              :key="attachment"
+              class="flex items-center gap-2 px-3 py-2 bg-muted rounded-lg border border-border text-sm"
+            >
+              <Icon icon="lucide:paperclip" class="h-4 w-4 text-muted-foreground" />
+              <span class="text-muted-foreground">{{ attachment }}</span>
+            </div>
+          </div>
+
           <MessageActions
             v-if="!isLoading && !isReadonly"
             :key="`action-${message.id}`"

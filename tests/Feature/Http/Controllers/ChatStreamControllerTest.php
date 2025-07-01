@@ -588,6 +588,97 @@ describe('ChatStreamController', function (): void {
         expect($content)->toContain('Response with system prompt');
     });
 
+    it('saves user message with attachments', function (): void {
+        Prism::fake([
+            TextResponseFake::make()
+                ->withText('I see you have attached some files.')
+                ->withFinishReason(FinishReason::Stop),
+        ])->withFakeChunkSize(1000);
+
+        $response = $this->post(route('chat.stream', $this->chat), [
+            'message' => 'Please review these files',
+            'attachments' => ['document.pdf', 'image.jpg'],
+        ]);
+
+        $response->assertOk();
+        $response->assertStreamed();
+
+        $userMessage = $this->chat->messages()->where('role', 'user')->latest()->first();
+        expect($userMessage->parts)->toBe(['text' => 'Please review these files']);
+        expect($userMessage->attachments)->toBe(['document.pdf', 'image.jpg']);
+
+        $assistantMessage = $this->chat->messages()->where('role', 'assistant')->latest()->first();
+        expect($assistantMessage->attachments)->toBe('[]');
+    });
+
+    it('handles empty attachments array', function (): void {
+        Prism::fake([
+            TextResponseFake::make()
+                ->withText('Regular message without attachments.')
+                ->withFinishReason(FinishReason::Stop),
+        ])->withFakeChunkSize(1000);
+
+        $response = $this->post(route('chat.stream', $this->chat), [
+            'message' => 'No attachments here',
+            'attachments' => [],
+        ]);
+
+        $response->assertOk();
+        $response->assertStreamed();
+
+        $userMessage = $this->chat->messages()->where('role', 'user')->latest()->first();
+        expect($userMessage->parts)->toBe(['text' => 'No attachments here']);
+        expect($userMessage->attachments)->toBe([]);
+    });
+
+    it('handles missing attachments field', function (): void {
+        Prism::fake([
+            TextResponseFake::make()
+                ->withText('Message without attachments field.')
+                ->withFinishReason(FinishReason::Stop),
+        ])->withFakeChunkSize(1000);
+
+        $response = $this->post(route('chat.stream', $this->chat), [
+            'message' => 'Message without attachments field',
+        ]);
+
+        $response->assertOk();
+        $response->assertStreamed();
+
+        $userMessage = $this->chat->messages()->where('role', 'user')->latest()->first();
+        expect($userMessage->parts)->toBe(['text' => 'Message without attachments field']);
+        expect($userMessage->attachments)->toBe([]);
+    });
+
+    it('validates attachments must be array of strings', function (): void {
+        $response = $this->post(route('chat.stream', $this->chat), [
+            'message' => 'Test message',
+            'attachments' => ['file1.pdf', 123, 'file2.jpg'], // Invalid: contains non-string
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['attachments.1']);
+    });
+
+    it('allows single attachment', function (): void {
+        Prism::fake([
+            TextResponseFake::make()
+                ->withText('I see your single attachment.')
+                ->withFinishReason(FinishReason::Stop),
+        ])->withFakeChunkSize(1000);
+
+        $response = $this->post(route('chat.stream', $this->chat), [
+            'message' => 'Check this file',
+            'attachments' => ['single-file.pdf'],
+        ]);
+
+        $response->assertOk();
+        $response->assertStreamed();
+
+        $userMessage = $this->chat->messages()->where('role', 'user')->latest()->first();
+        expect($userMessage->attachments)->toBe(['single-file.pdf']);
+    });
+
     it('sets correct message attributes when creating user message', function (): void {
         Prism::fake([
             TextResponseFake::make()

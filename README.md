@@ -10,13 +10,20 @@ Prism Chat provides a solid foundation for building AI-powered chat applications
 
 ## Features
 
-- **Real-time AI Responses**: Stream AI responses as they're generated
-- **Reasoning Support**: Built-in support for AI models with reasoning capabilities
-- **Multiple AI Providers**: Support for OpenAI, Anthropic, Google Gemini, Ollama, Groq, Mistral, DeepSeek, xAI, and VoyageAI
-- **Authentication System**: Built-in user authentication and management
-- **Appearance Settings**: Light/dark mode support with system preference detection
-- **Custom Theming**: Shadcn integration allows easy theme customization via CSS variables
-- **Chat Sharing**: Share conversations with other users
+- **Real-time AI Responses**
+  - Replies stream back to the browser as soon as they are produced, making conversations feel smooth and natural.
+- **Reasoning Support**
+  - Designed for models that can keep context and perform multi-step reasoning for more powerful interactions.
+- **Multiple AI Providers**
+  - Works with popular services like OpenAI, Anthropic, Google Gemini, Ollama, Groq, Mistral, DeepSeek, xAI and VoyageAI. Configure any or all of them in your `.env` file.
+- **Authentication System**
+  - Users can register, log in and manage their own chat history using Laravel's built‑in authentication.
+- **Appearance Settings**
+  - Light and dark mode are supported out of the box and follow your system preference automatically.
+- **Custom Theming**
+  - Tweak a handful of CSS variables and every Shadcn component in the UI will instantly reflect your branding.
+- **Chat Sharing**
+  - Create shareable links so others can view a conversation or continue chatting from where you left off.
 
 ## Tech Stack
 
@@ -167,6 +174,19 @@ public function getProvider(): Provider
     };
 }
 ```
+
+#### Editing Existing Models
+
+If you want to modify an existing model or remove it from the list:
+
+1. Open `app/Enums/ModelName.php` and locate the model case you want to change.
+2. Update the case value or name along with the corresponding `getName`,
+   `getDescription` and `getProvider` matches.
+3. If you remove a case, delete it from the enum and from each of these match
+   statements.
+4. Save the file and run your tests to verify everything still works as
+   expected.
+
 
 ## Deployment
 

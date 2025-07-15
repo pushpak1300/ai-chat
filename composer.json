@@ -16,7 +16,7 @@
     "laravel/octane": "^2.9",
     "laravel/sanctum": "^4.1",
     "laravel/tinker": "^2.10.1",
-    "prism-php/prism": "^0.71.1",
+    "prism-php/prism": "^0.80.0",
     "tightenco/ziggy": "^2.4"
   },
   "require-dev": {

@@ -38,14 +38,7 @@ const mainMenuItems = [
     label: 'New Chat',
     icon: 'lucide:message-circle-plus',
     href: route('chats.index'),
-  },
-  {
-    label: 'GitHub Repo',
-    icon: 'lucide:github',
-    href: 'https://github.com/pushpak1300/ai-chat',
-    target: '_blank',
-    external: true,
-  },
+  }
 ]
 
 const chatHistoryGroups = computed(() => [

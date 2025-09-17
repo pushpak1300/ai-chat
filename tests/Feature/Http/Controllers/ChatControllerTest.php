@@ -244,7 +244,7 @@ describe('ChatController', function (): void {
 
         it('validates message_id exists', function (): void {
             $data = [
-                'message_id' => 'non-existent-id',
+                'message_id' => '00000000-0000-0000-0000-000000000000',
                 'is_upvoted' => true,
             ];
 

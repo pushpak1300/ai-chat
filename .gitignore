@@ -28,3 +28,4 @@ frankenphp
 frankenphp-worker.php
 
 **/.DS_Store
+/.mcp.json

@@ -24,10 +24,18 @@ export function useChatHistory(chatHistory: MaybeRef<ChatHistory | null>) {
     }
 
     const now = new Date()
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const today = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    )
     const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000)
-    const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
-    const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
+    const sevenDaysAgo = new Date(
+      today.getTime() - 7 * 24 * 60 * 60 * 1000,
+    )
+    const thirtyDaysAgo = new Date(
+      today.getTime() - 30 * 24 * 60 * 60 * 1000,
+    )
 
     const groups: GroupedChatHistory = {
       today: [],
@@ -39,7 +47,11 @@ export function useChatHistory(chatHistory: MaybeRef<ChatHistory | null>) {
 
     history.data.forEach((chat) => {
       const chatDate = new Date(chat.updated_at)
-      const chatDateOnly = new Date(chatDate.getFullYear(), chatDate.getMonth(), chatDate.getDate())
+      const chatDateOnly = new Date(
+        chatDate.getFullYear(),
+        chatDate.getMonth(),
+        chatDate.getDate(),
+      )
 
       if (chatDateOnly.getTime() === today.getTime()) {
         groups.today.push(chat)

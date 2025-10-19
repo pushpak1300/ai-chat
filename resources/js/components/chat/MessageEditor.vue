@@ -52,18 +52,10 @@ onMounted(() => {
     />
 
     <div class="flex gap-2 justify-end">
-      <Button
-        variant="outline"
-        size="sm"
-        @click="handleCancel"
-      >
+      <Button variant="outline" size="sm" @click="handleCancel">
         Cancel
       </Button>
-      <Button
-        size="sm"
-        :disabled="!message.trim()"
-        @click="handleSave"
-      >
+      <Button size="sm" :disabled="!message.trim()" @click="handleSave">
         Save
       </Button>
     </div>

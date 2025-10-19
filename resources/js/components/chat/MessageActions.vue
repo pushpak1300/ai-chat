@@ -4,7 +4,11 @@ import { Icon } from '@iconify/vue'
 import { useClipboard } from '@vueuse/core'
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useAuth } from '@/composables/useAuth'
 import { useMessageVoting } from '@/composables/useMessageVoting'
 import { Role } from '@/types/enum'
@@ -19,13 +23,11 @@ const props = defineProps<Props>()
 
 const { isGuest } = useAuth()
 const { copy, copied } = useClipboard({ legacy: true })
-const { isUpvoted, isDownvoted, isProcessing, upvoteMessage, downvoteMessage } = useMessageVoting(
-  props.message,
-  props.chatId,
-)
+const { isUpvoted, isDownvoted, isProcessing, upvoteMessage, downvoteMessage }
+  = useMessageVoting(props.message, props.chatId)
 
-const shouldShowActions = computed(() =>
-  !props.isLoading && props.message.role === Role.ASSISTANT,
+const shouldShowActions = computed(
+  () => !props.isLoading && props.message.role === Role.ASSISTANT,
 )
 
 const handleCopy = () => copy(props.message.parts.text || '')
@@ -45,7 +47,7 @@ const handleDownvote = () => downvoteMessage()
           <Icon :icon="copied ? 'lucide:check' : 'lucide:copy'" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>{{ copied ? 'Copied!' : 'Copy' }}</TooltipContent>
+      <TooltipContent>{{ copied ? "Copied!" : "Copy" }}</TooltipContent>
     </Tooltip>
 
     <template v-if="!isGuest">
@@ -54,7 +56,9 @@ const handleDownvote = () => downvoteMessage()
           <Button
             data-testid="message-upvote"
             class="py-1 px-2 h-fit !pointer-events-auto"
-            :class="isUpvoted ? 'text-primary' : 'text-muted-foreground'"
+            :class="
+              isUpvoted ? 'text-primary' : 'text-muted-foreground'
+            "
             :disabled="isUpvoted || isProcessing"
             variant="outline"
             @click="handleUpvote"
@@ -62,7 +66,9 @@ const handleDownvote = () => downvoteMessage()
             <Icon icon="lucide:thumbs-up" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>{{ isUpvoted ? 'Upvoted' : 'Upvote Response' }}</TooltipContent>
+        <TooltipContent>
+          {{ isUpvoted ? "Upvoted" : "Upvote Response" }}
+        </TooltipContent>
       </Tooltip>
 
       <Tooltip>
@@ -70,7 +76,11 @@ const handleDownvote = () => downvoteMessage()
           <Button
             data-testid="message-downvote"
             class="py-1 px-2 h-fit !pointer-events-auto"
-            :class="isDownvoted ? 'text-primary' : 'text-muted-foreground'"
+            :class="
+              isDownvoted
+                ? 'text-primary'
+                : 'text-muted-foreground'
+            "
             :disabled="isDownvoted || isProcessing"
             variant="outline"
             @click="handleDownvote"
@@ -78,7 +88,9 @@ const handleDownvote = () => downvoteMessage()
             <Icon icon="lucide:thumbs-down" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>{{ isDownvoted ? 'Downvoted' : 'Downvote Response' }}</TooltipContent>
+        <TooltipContent>
+          {{ isDownvoted ? "Downvoted" : "Downvote Response" }}
+        </TooltipContent>
       </Tooltip>
     </template>
   </div>

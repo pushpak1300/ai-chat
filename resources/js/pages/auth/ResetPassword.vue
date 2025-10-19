@@ -31,14 +31,25 @@ function submit() {
 </script>
 
 <template>
-  <AuthLayout title="Reset password" description="Please enter your new password below">
+  <AuthLayout
+    title="Reset password"
+    description="Please enter your new password below"
+  >
     <Head title="Reset password" />
 
     <form @submit.prevent="submit">
       <div class="grid gap-6">
         <div class="grid gap-2">
           <Label for="email">Email</Label>
-          <Input id="email" v-model="form.email" type="email" name="email" autocomplete="email" class="mt-1 block w-full" readonly />
+          <Input
+            id="email"
+            v-model="form.email"
+            type="email"
+            name="email"
+            autocomplete="email"
+            class="mt-1 block w-full"
+            readonly
+          />
           <InputError :message="form.errors.email" class="mt-2" />
         </div>
 
@@ -58,7 +69,9 @@ function submit() {
         </div>
 
         <div class="grid gap-2">
-          <Label for="password_confirmation"> Confirm Password </Label>
+          <Label for="password_confirmation">
+            Confirm Password
+          </Label>
           <Input
             id="password_confirmation"
             v-model="form.password_confirmation"
@@ -71,8 +84,15 @@ function submit() {
           <InputError :message="form.errors.password_confirmation" />
         </div>
 
-        <Button type="submit" class="mt-4 w-full" :disabled="form.processing">
-          <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
+        <Button
+          type="submit"
+          class="mt-4 w-full"
+          :disabled="form.processing"
+        >
+          <LoaderCircle
+            v-if="form.processing"
+            class="h-4 w-4 animate-spin"
+          />
           Reset password
         </Button>
       </div>

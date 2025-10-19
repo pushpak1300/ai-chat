@@ -32,7 +32,9 @@ function getFileExtension(filename: string) {
         v-if="isUploading"
         class="flex items-center justify-center w-full h-full"
       >
-        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+        <div
+          class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"
+        />
       </div>
 
       <img
@@ -51,7 +53,9 @@ function getFileExtension(filename: string) {
       </div>
     </div>
 
-    <div class="mt-1 text-xs text-center text-muted-foreground truncate w-20">
+    <div
+      class="mt-1 text-xs text-center text-muted-foreground truncate w-20"
+    >
       {{ attachment[0] }}
     </div>
 

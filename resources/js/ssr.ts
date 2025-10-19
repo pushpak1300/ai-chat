@@ -12,7 +12,11 @@ createServer(page =>
     page,
     render: renderToString,
     title: title => `${title} - ${appName}`,
-    resolve: name => resolvePageComponent(`./pages/${name}.vue`, import.meta.glob('./pages/**/*.vue')),
+    resolve: name =>
+      resolvePageComponent(
+        `./pages/${name}.vue`,
+        import.meta.glob('./pages/**/*.vue'),
+      ),
     setup({ App, props, plugin }) {
       const app = createSSRApp({ render: () => h(App, props) })
 
@@ -23,7 +27,8 @@ createServer(page =>
       }
 
       // Create route function...
-      const route = (name: string, params?: any, absolute?: boolean) => ziggyRoute(name, params, absolute, ziggyConfig)
+      const route = (name: string, params?: any, absolute?: boolean) =>
+        ziggyRoute(name, params, absolute, ziggyConfig)
 
       // Make route function available globally...
       app.config.globalProperties.route = route

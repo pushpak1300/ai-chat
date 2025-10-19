@@ -13,7 +13,10 @@ import {
 import { MODEL_KEY } from '@/constants/models'
 
 const page = usePage<SharedData>()
-const selectedModel = useStorage<Model>(MODEL_KEY, page.props.availableModels?.[0])
+const selectedModel = useStorage<Model>(
+  MODEL_KEY,
+  page.props.availableModels?.[0],
+)
 
 function selectModel(model: Model) {
   selectedModel.value = model
@@ -28,7 +31,7 @@ function selectModel(model: Model) {
         variant="outline"
         class="md:px-2 md:h-[34px]"
       >
-        {{ selectedModel?.name || 'Select Model' }}
+        {{ selectedModel?.name || "Select Model" }}
         <Icon icon="lucide:chevron-down" class="ml-auto" />
       </Button>
     </DropdownMenuTrigger>
@@ -47,7 +50,11 @@ function selectModel(model: Model) {
             {{ model?.description }}
           </div>
         </div>
-        <Icon v-if="model?.id === selectedModel?.id" icon="lucide:check-circle" class="ml-auto" />
+        <Icon
+          v-if="model?.id === selectedModel?.id"
+          icon="lucide:check-circle"
+          class="ml-auto"
+        />
       </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Chunk, Message as MessageType } from '@/types'
+import type { Message as MessageType, StreamEvent } from '@/types'
 import { useJsonStream } from '@laravel/stream-vue'
 import { useScroll } from '@vueuse/core'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
@@ -18,7 +18,10 @@ const emit = defineEmits<{
   updateIsAtBottom: [isAtBottom: boolean]
 }>()
 
-const { isFetching, isStreaming } = useJsonStream<Chunk>(`stream/${props.chatId}`, { id: props.streamId })
+const { isFetching, isStreaming } = useJsonStream<StreamEvent>(
+  `stream/${props.chatId}`,
+  { id: props.streamId },
+)
 
 const containerRef = ref<HTMLElement>()
 // @ts-expect-error - containerRef is not typed (for some reason)
@@ -29,21 +32,29 @@ function scrollToBottom() {
   if (!containerRef.value)
     return
 
-  const maxScrollTop = containerRef.value.scrollHeight - containerRef.value.clientHeight
+  const maxScrollTop
+    = containerRef.value.scrollHeight - containerRef.value.clientHeight
   y.value = maxScrollTop
 }
 
-watch(() => props.messages.length, (newLength, oldLength) => {
-  if (newLength > oldLength && (isAtBottom.value || newLength === 1)) {
-    nextTick(scrollToBottom)
-  }
-})
+watch(
+  () => props.messages.length,
+  (newLength, oldLength) => {
+    if (newLength > oldLength && (isAtBottom.value || newLength === 1)) {
+      nextTick(scrollToBottom)
+    }
+  },
+)
 
-watch(() => props.messages[props.messages.length - 1]?.parts, () => {
-  if (isAtBottom.value && isStreaming.value) {
-    nextTick(scrollToBottom)
-  }
-}, { flush: 'post' })
+watch(
+  () => props.messages[props.messages.length - 1]?.parts,
+  () => {
+    if (isAtBottom.value && isStreaming.value) {
+      nextTick(scrollToBottom)
+    }
+  },
+  { flush: 'post' },
+)
 
 watch(isAtBottom, (newValue) => {
   emit('updateIsAtBottom', newValue)
@@ -65,7 +76,10 @@ defineExpose({
     ref="containerRef"
     class="flex flex-col h-full overflow-y-auto overflow-x-hidden pt-4 relative"
   >
-    <div v-if="messages.length === 0" class="flex-1 flex items-center justify-center">
+    <div
+      v-if="messages.length === 0"
+      class="flex-1 flex items-center justify-center"
+    >
       <Greeting />
     </div>
 
@@ -81,9 +95,7 @@ defineExpose({
           :requires-scroll-padding="index === messages.length - 1"
         />
 
-        <ThinkingMessage
-          v-if="isFetching"
-        />
+        <ThinkingMessage v-if="isFetching" />
       </div>
     </template>
   </div>

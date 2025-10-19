@@ -5,7 +5,9 @@ import { AvatarFallback } from 'reka-ui'
 import { computed } from 'vue'
 import { cn } from '@/lib/utils'
 
-const props = defineProps<AvatarFallbackProps & { class?: HTMLAttributes['class'] }>()
+const props = defineProps<
+    AvatarFallbackProps & { class?: HTMLAttributes['class'] }
+>()
 
 const delegatedProps = computed(() => {
   const { class: _, ...delegated } = props
@@ -18,7 +20,12 @@ const delegatedProps = computed(() => {
   <AvatarFallback
     data-slot="avatar-fallback"
     v-bind="delegatedProps"
-    :class="cn('bg-muted flex size-full items-center justify-center rounded-full', props.class)"
+    :class="
+      cn(
+        'bg-muted flex size-full items-center justify-center rounded-full',
+        props.class,
+      )
+    "
   >
     <slot />
   </AvatarFallback>

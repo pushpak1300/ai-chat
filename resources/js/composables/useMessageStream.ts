@@ -1,16 +1,20 @@
 import type { Ref } from 'vue'
-import type { Chunk, Message } from '@/types'
+import type { Message, StreamEvent } from '@/types'
 import { useStream } from '@laravel/stream-vue'
 import { nextTick } from 'vue'
-import { ChunkType, Role } from '@/types/enum'
+import { ContentType, Role, StreamEventType } from '@/types/enum'
 
 interface StreamParams {
   message: string
   model: string
 }
 
-export function useMessageStream(chatId: string, messages: Ref<Message[]>, onComplete?: () => void) {
-  const updateMessageWithChunk = (chunkData: Chunk): void => {
+export function useMessageStream(
+  chatId: string,
+  messages: Ref<Message[]>,
+  onComplete?: () => void,
+) {
+  const updateMessageWithEvent = (eventData: StreamEvent): void => {
     let currentMessage = messages.value[messages.value.length - 1]
 
     if (!currentMessage || currentMessage.role !== Role.ASSISTANT) {
@@ -21,22 +25,37 @@ export function useMessageStream(chatId: string, messages: Ref<Message[]>, onCom
       messages.value.push(currentMessage)
     }
 
-    if (!currentMessage.parts[chunkData.chunkType]) {
-      currentMessage.parts[chunkData.chunkType] = ''
+    const contentType
+      = eventData.eventType === StreamEventType.TEXT_DELTA
+        ? ContentType.TEXT
+        : ContentType.THINKING
+
+    if (!currentMessage.parts[contentType]) {
+      currentMessage.parts[contentType] = ''
     }
 
-    currentMessage.parts[chunkData.chunkType] += chunkData.content
+    currentMessage.parts[contentType] += eventData.content
   }
   const parseStreamChunk = (chunk: string): void => {
-    const lines = chunk.trim().split('\n').filter(line => line.trim())
+    const lines = chunk
+      .trim()
+      .split('\n')
+      .filter(line => line.trim())
 
     for (const line of lines) {
       try {
-        const chunkData = JSON.parse(line) as Chunk
-        updateMessageWithChunk(chunkData)
+        const eventData = JSON.parse(line) as StreamEvent
+        if (eventData.eventType !== StreamEventType.ERROR) {
+          updateMessageWithEvent(eventData)
+        }
       }
       catch (error) {
-        console.error('Failed to parse JSON line:', error, 'Line:', line)
+        console.error(
+          'Failed to parse JSON line:',
+          error,
+          'Line:',
+          line,
+        )
       }
     }
   }
@@ -46,13 +65,14 @@ export function useMessageStream(chatId: string, messages: Ref<Message[]>, onCom
       messages.value.push({
         role: Role.ASSISTANT,
         parts: {
-          [ChunkType.TEXT]: 'Sorry, there was an error processing your request. Please try again.',
+          [ContentType.TEXT]:
+                        'Sorry, there was an error processing your request. Please try again.',
         },
       })
     })
   }
 
-  const stream = useStream<StreamParams, Chunk>(
+  const stream = useStream<StreamParams, StreamEvent>(
     route('chat.stream', { chat: chatId }),
     {
       onData: parseStreamChunk,
@@ -63,6 +83,6 @@ export function useMessageStream(chatId: string, messages: Ref<Message[]>, onCom
 
   return {
     ...stream,
-    updateMessageWithChunk,
+    updateMessageWithEvent,
   }
 }

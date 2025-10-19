@@ -2,15 +2,22 @@
 import { Icon } from '@iconify/vue'
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useChatInput } from '@/composables/useChatInput'
 
-const props = withDefaults(defineProps<{
-  uploadQueue: Array<string>
-  isProcessing?: boolean
-}>(), {
-  isProcessing: false,
-})
+const props = withDefaults(
+  defineProps<{
+    uploadQueue: Array<string>
+    isProcessing?: boolean
+  }>(),
+  {
+    isProcessing: false,
+  },
+)
 
 defineEmits<{
   submit: []

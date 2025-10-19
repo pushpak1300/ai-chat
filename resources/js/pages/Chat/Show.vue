@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import type { BreadcrumbItemType, Chat, ChatHistory, MessageChunks, Model } from '@/types'
+import type {
+  BreadcrumbItemType,
+  Chat,
+  ChatHistory,
+  MessageParts,
+  Model,
+} from '@/types'
 import { Head, router } from '@inertiajs/vue3'
 import { useStorage } from '@vueuse/core'
 import { computed, nextTick, onMounted, provide, ref, watch } from 'vue'
@@ -10,7 +16,7 @@ import { useMessageStream } from '@/composables/useMessageStream'
 import { provideVisibility } from '@/composables/useVisibility'
 import { MODEL_KEY } from '@/constants/models'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { ChunkType, Visibility } from '@/types/enum'
+import { ContentType, Visibility } from '@/types/enum'
 
 const props = defineProps<{
   chatHistory?: ChatHistory
@@ -19,7 +25,9 @@ const props = defineProps<{
 }>()
 
 const pageTitle = computed<string>(() => props.chat?.title || 'Chat')
-const initialVisibility = computed<Visibility>(() => props.chat?.visibility || Visibility.PRIVATE)
+const initialVisibility = computed<Visibility>(
+  () => props.chat?.visibility || Visibility.PRIVATE,
+)
 
 const breadcrumbs: BreadcrumbItemType[] = [
   {
@@ -33,7 +41,10 @@ const initialVisibilityType = ref<Visibility>(initialVisibility.value)
 const selectedModel = useStorage<Model>(MODEL_KEY, props.availableModels[0])
 const chatContainerRef = ref<InstanceType<typeof ChatContainer>>()
 
-const { visibility } = provideVisibility(initialVisibility.value, initialVisibilityType)
+const { visibility } = provideVisibility(
+  initialVisibility.value,
+  initialVisibilityType,
+)
 const {
   messages,
   addTextMessage,
@@ -42,7 +53,11 @@ const {
   isLastMessageFromUser,
 } = useChatMessages(props.chat, chatContainerRef)
 
-const { isFetching, isStreaming, send, cancel, id } = useMessageStream(props.chat.id, messages, clearInput)
+const { isFetching, isStreaming, send, cancel, id } = useMessageStream(
+  props.chat.id,
+  messages,
+  clearInput,
+)
 
 provide('chatId', props.chat.id)
 
@@ -59,17 +74,21 @@ function updateChatVisibility(newVisibility: Visibility): void {
   )
 }
 
-watch(visibility, (newVisibility, oldVisibility) => {
-  if (oldVisibility !== undefined && newVisibility !== oldVisibility) {
-    updateChatVisibility(newVisibility)
-  }
-}, { immediate: false })
+watch(
+  visibility,
+  (newVisibility, oldVisibility) => {
+    if (oldVisibility !== undefined && newVisibility !== oldVisibility) {
+      updateChatVisibility(newVisibility)
+    }
+  },
+  { immediate: false },
+)
 
-function sendMessage(messageContent: MessageChunks): void {
-  addTextMessage(messageContent[ChunkType.TEXT] || '')
+function sendMessage(messageContent: MessageParts): void {
+  addTextMessage(messageContent[ContentType.TEXT] || '')
 
   send({
-    message: messageContent[ChunkType.TEXT] || '',
+    message: messageContent[ContentType.TEXT] || '',
     model: selectedModel.value.id,
   })
 }
@@ -77,7 +96,12 @@ function sendMessage(messageContent: MessageChunks): void {
 async function handleSubmit(): Promise<void> {
   const trimmedInput = input.value.trim()
 
-  if (!trimmedInput || isFetching.value || isStreaming.value || !props.chat.id) {
+  if (
+    !trimmedInput
+    || isFetching.value
+    || isStreaming.value
+    || !props.chat.id
+  ) {
     return
   }
 
@@ -101,7 +125,7 @@ function stop(): void {
 
 onMounted(() => {
   if (input.value.trim()) {
-    sendMessage({ [ChunkType.TEXT]: input.value.trim() })
+    sendMessage({ [ContentType.TEXT]: input.value.trim() })
     clearInput()
     return
   }

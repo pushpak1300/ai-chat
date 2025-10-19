@@ -8,11 +8,14 @@ import VisibilitySelector from '@/components/chat/VisibilitySelector.vue'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { useAuth } from '@/composables/useAuth'
 
-withDefaults(defineProps<{
-  breadcrumbs?: BreadcrumbItemType[]
-}>(), {
-  breadcrumbs: () => [],
-})
+withDefaults(
+  defineProps<{
+    breadcrumbs?: BreadcrumbItemType[]
+  }>(),
+  {
+    breadcrumbs: () => [],
+  },
+)
 
 const page = usePage<SharedData>()
 const { isGuest } = useAuth()
@@ -28,7 +31,10 @@ const { isGuest } = useAuth()
         <Breadcrumbs :breadcrumbs="breadcrumbs" />
       </template>
     </div>
-    <div v-if="page.url.startsWith('/chat') && !isGuest" class="items-center gap-2 hidden md:flex">
+    <div
+      v-if="page.url.startsWith('/chat') && !isGuest"
+      class="items-center gap-2 hidden md:flex"
+    >
       <ChatAction />
       <ModelSelector />
       <VisibilitySelector />

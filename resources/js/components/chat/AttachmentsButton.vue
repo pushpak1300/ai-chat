@@ -2,7 +2,11 @@
 import { Icon } from '@iconify/vue'
 import { useStream } from '@laravel/stream-vue'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 interface Props {
   fileInputRef: HTMLInputElement | undefined
@@ -12,7 +16,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { isStreaming } = useStream(`stream/${props.chatId}`, { id: props.streamId })
+const { isStreaming } = useStream(`stream/${props.chatId}`, {
+  id: props.streamId,
+})
 
 function handleClick() {
   if (props.fileInputRef) {

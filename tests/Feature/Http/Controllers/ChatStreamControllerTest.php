@@ -34,14 +34,14 @@ describe('ChatStreamController', function (): void {
 
         $response = $this->post(route('chat.stream', $this->chat), [
             'message' => 'Hello',
-            'model' => ModelName::GPT_4O_MINI->value,
+            'model' => ModelName::GPT_5_MINI->value,
         ]);
 
         $response->assertOk();
         $response->assertStreamed();
 
         $content = $response->streamedContent();
-        expect($content)->toContain('"chunkType":"text"');
+        expect($content)->toContain('"eventType":"text_delta"');
         expect($content)->toContain('Hello, how can I help you today?');
     });
 
@@ -64,14 +64,14 @@ describe('ChatStreamController', function (): void {
 
         $response = $this->post(route('chat.stream', $this->chat), [
             'message' => 'Explain quantum computing',
-            'model' => ModelName::GPT_4O_MINI->value,
+            'model' => ModelName::GPT_5_MINI->value,
         ]);
 
         $response->assertOk();
         $response->assertStreamed();
 
         $content = $response->streamedContent();
-        expect($content)->toContain('"chunkType":"text"');
+        expect($content)->toContain('"eventType":"text_delta"');
         expect($content)->toContain('Let me think about this...');
     });
 
@@ -86,7 +86,7 @@ describe('ChatStreamController', function (): void {
 
         $response = $this->post(route('chat.stream', $this->chat), [
             'message' => 'This might cause an error',
-            'model' => ModelName::GPT_4O_MINI->value,
+            'model' => ModelName::GPT_5_MINI->value,
         ]);
 
         $response->assertOk();
@@ -124,7 +124,7 @@ describe('ChatStreamController', function (): void {
 
         $response = $this->post(route('chat.stream', $this->chat), [
             'message' => 'Complex multi-step question',
-            'model' => ModelName::GPT_4O_MINI->value,
+            'model' => ModelName::GPT_5_MINI->value,
         ]);
 
         $response->assertOk();
@@ -157,7 +157,7 @@ describe('ChatStreamController', function (): void {
 
         $response = $this->post(route('chat.stream', $this->chat), [
             'message' => 'Complex analytical question',
-            'model' => ModelName::GPT_4O_MINI->value,
+            'model' => ModelName::GPT_5_MINI->value,
         ]);
 
         $response->assertOk();
@@ -165,7 +165,7 @@ describe('ChatStreamController', function (): void {
 
         $content = $response->streamedContent();
         expect($content)->toContain('I need to think about this carefully.');
-        expect($content)->toContain('"chunkType":"text"');
+        expect($content)->toContain('"eventType":"text_delta"');
 
         $assistantMessage = $this->chat->messages()->where('role', 'assistant')->latest()->first();
         expect($assistantMessage->parts)->toBe(['text' => 'I need to think about this carefully.']);
@@ -185,7 +185,7 @@ describe('ChatStreamController', function (): void {
 
         $response = $this->post(route('chat.stream', $this->chat), [
             'message' => 'What is the weather like?',
-            'model' => ModelName::GPT_4O_MINI->value,
+            'model' => ModelName::GPT_5_MINI->value,
         ]);
 
         $response->assertOk();
@@ -214,7 +214,7 @@ describe('ChatStreamController', function (): void {
 
         $response = $this->post(route('chat.stream', $this->chat), [
             'message' => 'Test message',
-            'model' => ModelName::GPT_4O_MINI->value,
+            'model' => ModelName::GPT_5_MINI->value,
         ]);
 
         $response->assertOk();
@@ -222,7 +222,7 @@ describe('ChatStreamController', function (): void {
 
         // Check that the response contains properly formatted JSON chunks
         $streamedContent = $response->streamedContent();
-        expect($streamedContent)->toContain('"chunkType":"text"');
+        expect($streamedContent)->toContain('"eventType":"text_delta"');
         expect($streamedContent)->toContain('Response');
     });
 
@@ -324,7 +324,7 @@ describe('ChatStreamController', function (): void {
 
         $response = $this->post(route('chat.stream', $this->chat), [
             'message' => '  Hello with spaces  ',
-            'model' => ModelName::GPT_4O_MINI->value,
+            'model' => ModelName::GPT_5_MINI->value,
         ]);
 
         $response->assertOk();
@@ -369,7 +369,7 @@ describe('ChatStreamController', function (): void {
 
         $response = $this->post(route('chat.stream', $this->chat), [
             'message' => 'Test',
-            'model' => ModelName::GPT_4O_MINI->value,
+            'model' => ModelName::GPT_5_MINI->value,
         ]);
 
         $response->assertOk();
@@ -380,7 +380,7 @@ describe('ChatStreamController', function (): void {
 
         $fake->assertCallCount(1);
         $fake->assertRequest(function (array $requests): true {
-            expect($requests[0]->model())->toBe('gpt-4o-mini');
+            expect($requests[0]->model())->toBe('gpt-5-mini');
 
             return true;
         });
@@ -403,7 +403,7 @@ describe('ChatStreamController', function (): void {
         $response->assertStreamed();
 
         $content = $response->streamedContent();
-        expect($content)->toContain('"chunkType":"text"');
+        expect($content)->toContain('"eventType":"text_delta"');
         expect($content)->toContain('This ');
     });
 

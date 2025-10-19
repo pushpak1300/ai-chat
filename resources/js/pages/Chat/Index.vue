@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import type { BreadcrumbItemType, ChatHistory, Model, SharedData } from '@/types'
+import type {
+  BreadcrumbItemType,
+  ChatHistory,
+  Model,
+  SharedData,
+} from '@/types'
 import { Head, router, usePage } from '@inertiajs/vue3'
 import { useStorage } from '@vueuse/core'
 import { ref } from 'vue'

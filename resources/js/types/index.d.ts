@@ -1,7 +1,7 @@
 import type { PageProps } from '@inertiajs/core'
 import type { LucideIcon } from 'lucide-vue-next'
 import type { Config } from 'ziggy-js'
-import type { ContentType, Role, Visibility } from './enum'
+import type { ContentType, Role, StreamEventType, Visibility } from './enum'
 
 export interface Auth {
   user?: User
@@ -72,18 +72,18 @@ export interface PartType {
   content: string
 }
 
-export interface Chunk {
-  chunkType: ChunkType
+export interface StreamEvent {
+  eventType: StreamEventType
   content: string
 }
 
-export type MessageChunks = Record<ChunkType, string>
+export type MessageParts = Partial<Record<ContentType, string>>
 
 export interface Message {
   id?: string
   chat_id?: string
   role: Role
-  parts: MessageChunks
+  parts: MessageParts
   attachments?: string[]
   is_upvoted?: boolean
   created_at?: string

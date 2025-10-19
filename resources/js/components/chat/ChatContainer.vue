@@ -4,19 +4,22 @@ import { ref } from 'vue'
 import Messages from '@/components/chat/Messages.vue'
 import MultimodalInput from '@/components/chat/MultimodalInput.vue'
 
-withDefaults(defineProps<{
-  messages?: Array<Message>
-  streamId?: string
-  attachments?: Array<string>
-  isReadonly?: boolean
-  chatId?: string
-}>(), {
-  messages: () => [],
-  streamId: '',
-  attachments: () => [],
-  isReadonly: false,
-  chatId: '',
-})
+withDefaults(
+  defineProps<{
+    messages?: Array<Message>
+    streamId?: string
+    attachments?: Array<string>
+    isReadonly?: boolean
+    chatId?: string
+  }>(),
+  {
+    messages: () => [],
+    streamId: '',
+    attachments: () => [],
+    isReadonly: false,
+    chatId: '',
+  },
+)
 
 defineEmits<{
   append: [message: string]
@@ -53,7 +56,9 @@ defineExpose({
       />
     </div>
 
-    <div class="flex-shrink-0 mx-auto w-full max-w-3xl px-2 sm:px-4 pb-2 sm:pb-4 mt-2">
+    <div
+      class="flex-shrink-0 mx-auto w-full max-w-3xl px-2 sm:px-4 pb-2 sm:pb-4 mt-2"
+    >
       <MultimodalInput
         :chat-id="chatId"
         :stream-id="streamId"

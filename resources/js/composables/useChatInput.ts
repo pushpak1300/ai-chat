@@ -36,7 +36,9 @@ export function useChatInput() {
   const chatInputState = inject(CHAT_INPUT_KEY)
 
   if (!chatInputState) {
-    throw new Error('useChatInput must be used within a component that provides chat input')
+    throw new Error(
+      'useChatInput must be used within a component that provides chat input',
+    )
   }
 
   return chatInputState

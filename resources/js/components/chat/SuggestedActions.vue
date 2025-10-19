@@ -28,7 +28,11 @@ const suggestedActions = [
   },
 ]
 
-function handleActionClick(suggestedAction: { title: string, label: string, action: string }) {
+function handleActionClick(suggestedAction: {
+  title: string
+  label: string
+  action: string
+}) {
   emit('append', suggestedAction.action)
 }
 </script>

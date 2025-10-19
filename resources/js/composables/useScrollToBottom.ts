@@ -15,7 +15,8 @@ export function useScrollToBottom() {
     if (!containerRef.value)
       return
 
-    const maxScrollTop = containerRef.value.scrollHeight - containerRef.value.clientHeight
+    const maxScrollTop
+      = containerRef.value.scrollHeight - containerRef.value.clientHeight
 
     if (behavior === 'auto') {
       y.value = maxScrollTop

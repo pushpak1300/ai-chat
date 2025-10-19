@@ -2,7 +2,12 @@
 import type { User } from '@/types'
 import { Link, router } from '@inertiajs/vue3'
 import { LogIn, LogOut, Settings } from 'lucide-vue-next'
-import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
+import {
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
 import UserInfo from '@/components/UserInfo.vue'
 import { useAuth } from '@/composables/useAuth'
 
@@ -41,7 +46,12 @@ function handleLogout() {
   <template v-else>
     <DropdownMenuGroup>
       <DropdownMenuItem :as-child="true">
-        <Link class="block w-full" :href="route('profile.edit')" prefetch as="button">
+        <Link
+          class="block w-full"
+          :href="route('profile.edit')"
+          prefetch
+          as="button"
+        >
           <Settings class="mr-2 h-4 w-4" />
           Settings
         </Link>
@@ -49,7 +59,13 @@ function handleLogout() {
     </DropdownMenuGroup>
     <DropdownMenuSeparator />
     <DropdownMenuItem :as-child="true">
-      <Link class="block w-full" method="post" :href="route('logout')" as="button" @click="handleLogout">
+      <Link
+        class="block w-full"
+        method="post"
+        :href="route('logout')"
+        as="button"
+        @click="handleLogout"
+      >
         <LogOut class="mr-2 h-4 w-4" />
         Log out
       </Link>

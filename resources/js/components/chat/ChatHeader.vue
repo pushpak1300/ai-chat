@@ -7,7 +7,11 @@ import SidebarToggle from '@/components/chat/SidebarToggle.vue'
 import VisibilitySelector from '@/components/chat/VisibilitySelector.vue'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/components/ui/sidebar'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { provideVisibility } from '@/composables/useVisibility'
 
 interface Props {
@@ -30,10 +34,12 @@ function handleNewChat() {
 </script>
 
 <template>
-  <header class="flex sticky top-0 bg-background py-1.5 items-center px-2 md:px-2 gap-2">
+  <header
+    class="flex sticky top-0 bg-background py-1.5 items-center px-2 md:px-2 gap-2"
+  >
     <SidebarToggle />
 
-    <Tooltip v-if="(!open || windowWidth.value < 768)">
+    <Tooltip v-if="!open || windowWidth.value < 768">
       <TooltipTrigger as-child>
         <Button
           variant="outline"
@@ -53,9 +59,6 @@ function handleNewChat() {
       class="order-1 md:order-2"
     />
 
-    <VisibilitySelector
-      v-if="!isReadonly"
-      class="order-1 md:order-3"
-    />
+    <VisibilitySelector v-if="!isReadonly" class="order-1 md:order-3" />
   </header>
 </template>

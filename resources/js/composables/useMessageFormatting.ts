@@ -1,33 +1,35 @@
 import type { ComputedRef } from 'vue'
-import type { Message, MessageChunks } from '@/types'
+import type { Message, MessageParts } from '@/types'
 import { computed } from 'vue'
-import { ChunkType } from '@/types/enum'
+import { ContentType } from '@/types/enum'
 
 export function useMessageFormatting(message: Message): {
-  messageParts: ComputedRef<MessageChunks[]>
+  messageParts: ComputedRef<MessageParts[]>
   hasThinking: ComputedRef<boolean>
   hasText: ComputedRef<boolean>
 } {
-  const messageParts = computed<MessageChunks[]>(() => {
-    const parts: MessageChunks[] = []
+  const messageParts = computed<MessageParts[]>(() => {
+    const parts: MessageParts[] = []
 
-    if (message.parts[ChunkType.THINKING]) {
+    if (message.parts[ContentType.THINKING]) {
       parts.push({
-        [ChunkType.THINKING]: message.parts[ChunkType.THINKING],
+        [ContentType.THINKING]: message.parts[ContentType.THINKING],
       })
     }
 
-    if (message.parts[ChunkType.TEXT]) {
+    if (message.parts[ContentType.TEXT]) {
       parts.push({
-        [ChunkType.TEXT]: message.parts[ChunkType.TEXT],
+        [ContentType.TEXT]: message.parts[ContentType.TEXT],
       })
     }
 
     return parts
   })
 
-  const hasThinking = computed<boolean>(() => !!message.parts[ChunkType.THINKING])
-  const hasText = computed<boolean>(() => !!message.parts[ChunkType.TEXT])
+  const hasThinking = computed<boolean>(
+    () => !!message.parts[ContentType.THINKING],
+  )
+  const hasText = computed<boolean>(() => !!message.parts[ContentType.TEXT])
 
   return {
     messageParts,

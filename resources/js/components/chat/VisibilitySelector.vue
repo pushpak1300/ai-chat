@@ -35,8 +35,10 @@ const availableVisibilities: VisibilityOption[] = [
   },
 ]
 
-const selectedVisibility = computed(() =>
-  availableVisibilities.find(v => v.id === visibility.value) || availableVisibilities[0],
+const selectedVisibility = computed(
+  () =>
+    availableVisibilities.find(v => v.id === visibility.value)
+    || availableVisibilities[0],
 )
 
 function selectVisibility(visibilityOption: VisibilityOption) {
@@ -47,7 +49,11 @@ function selectVisibility(visibilityOption: VisibilityOption) {
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button data-testid="visibility-selector" variant="outline" class="md:px-2 md:h-[34px]">
+      <Button
+        data-testid="visibility-selector"
+        variant="outline"
+        class="md:px-2 md:h-[34px]"
+      >
         <Icon :icon="selectedVisibility.icon" class="mr-2" />
         {{ selectedVisibility.label }}
         <Icon icon="lucide:chevron-down" class="ml-auto" />
@@ -55,8 +61,10 @@ function selectVisibility(visibilityOption: VisibilityOption) {
     </DropdownMenuTrigger>
     <DropdownMenuContent align="start" class="min-w-[300px]">
       <DropdownMenuItem
-        v-for="visibilityOption in availableVisibilities" :key="visibilityOption.id"
-        :data-testid="`visibility-selector-item-${visibilityOption.id}`" @select="selectVisibility(visibilityOption)"
+        v-for="visibilityOption in availableVisibilities"
+        :key="visibilityOption.id"
+        :data-testid="`visibility-selector-item-${visibilityOption.id}`"
+        @select="selectVisibility(visibilityOption)"
       >
         <div class="flex flex-col gap-1 items-start">
           <div class="flex items-center gap-2">
@@ -67,7 +75,11 @@ function selectVisibility(visibilityOption: VisibilityOption) {
             {{ visibilityOption.description }}
           </div>
         </div>
-        <Icon v-if="visibilityOption.id === visibility" icon="lucide:check-circle" class="ml-auto" />
+        <Icon
+          v-if="visibilityOption.id === visibility"
+          icon="lucide:check-circle"
+          class="ml-auto"
+        />
       </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>

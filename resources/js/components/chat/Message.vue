@@ -4,7 +4,7 @@ import { Icon } from '@iconify/vue'
 import { AnimatePresence, motion } from 'motion-v'
 import { ref } from 'vue'
 import { useMessageFormatting } from '@/composables/useMessageFormatting'
-import { ChunkType, Role } from '@/types/enum'
+import { ContentType, Role } from '@/types/enum'
 import MarkdownRenderer from './MarkdownRenderer.vue'
 import MessageActions from './MessageActions.vue'
 import ReasoningDisplay from './ReasoningDisplay.vue'
@@ -56,19 +56,23 @@ const isAssistantMessage = props.message.role === Role.ASSISTANT
           class="flex flex-col gap-2 w-full"
           :class="[
             {
-              'min-h-96': isAssistantMessage && requiresScrollPadding,
+              'min-h-96':
+                isAssistantMessage && requiresScrollPadding,
             },
           ]"
         >
-          <template v-for="(part, partIndex) in messageParts" :key="`${message.id}-${partIndex}`">
+          <template
+            v-for="(part, partIndex) in messageParts"
+            :key="`${message.id}-${partIndex}`"
+          >
             <ReasoningDisplay
-              v-if="part[ChunkType.THINKING]"
-              :content="part[ChunkType.THINKING]"
+              v-if="part[ContentType.THINKING]"
+              :content="part[ContentType.THINKING]"
               :is-loading="isLoading"
             />
 
             <div
-              v-else-if="part[ChunkType.TEXT]"
+              v-else-if="part[ContentType.TEXT]"
               class="flex flex-row gap-2 items-start"
             >
               <div
@@ -77,23 +81,30 @@ const isAssistantMessage = props.message.role === Role.ASSISTANT
                 class="flex flex-col gap-4 min-w-0 overflow-hidden"
                 :class="[
                   {
-                    'bg-primary text-primary-foreground px-3 py-2 rounded-xl': isUserMessage,
+                    'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                      isUserMessage,
                   },
                 ]"
               >
-                <div v-if="part[ChunkType.TEXT]" class="w-full">
+                <div
+                  v-if="part[ContentType.TEXT]"
+                  class="w-full"
+                >
                   <MarkdownRenderer
                     v-if="isAssistantMessage"
-                    :content="part[ChunkType.TEXT]"
+                    :content="part[ContentType.TEXT]"
                   />
                   <div
                     v-else
                     class="whitespace-pre-wrap"
-                    v-text="part[ChunkType.TEXT]"
+                    v-text="part[ContentType.TEXT]"
                   />
                 </div>
 
-                <div v-else class="w-full text-muted-foreground italic">
+                <div
+                  v-else
+                  class="w-full text-muted-foreground italic"
+                >
                   No content available
                 </div>
               </div>

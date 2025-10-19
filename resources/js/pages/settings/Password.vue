@@ -56,7 +56,10 @@ function updatePassword() {
 
     <SettingsLayout>
       <div class="space-y-6">
-        <HeadingSmall title="Update password" description="Ensure your account is using a long, random password to stay secure" />
+        <HeadingSmall
+          title="Update password"
+          description="Ensure your account is using a long, random password to stay secure"
+        />
 
         <form class="space-y-6" @submit.prevent="updatePassword">
           <div class="grid gap-2">
@@ -97,7 +100,9 @@ function updatePassword() {
               autocomplete="new-password"
               placeholder="Confirm password"
             />
-            <InputError :message="form.errors.password_confirmation" />
+            <InputError
+              :message="form.errors.password_confirmation"
+            />
           </div>
 
           <div class="flex items-center gap-4">
@@ -111,7 +116,10 @@ function updatePassword() {
               leave-active-class="transition ease-in-out"
               leave-to-class="opacity-0"
             >
-              <p v-show="form.recentlySuccessful" class="text-sm text-neutral-600">
+              <p
+                v-show="form.recentlySuccessful"
+                class="text-sm text-neutral-600"
+              >
                 Saved.
               </p>
             </Transition>

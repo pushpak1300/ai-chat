@@ -9,7 +9,10 @@ interface VisibilityState {
 
 const VisibilityKey: InjectionKey<VisibilityState> = Symbol('visibility')
 
-export function provideVisibility(initialVisibility: Visibility = Visibility.PRIVATE, syncRef?: Ref<Visibility>) {
+export function provideVisibility(
+  initialVisibility: Visibility = Visibility.PRIVATE,
+  syncRef?: Ref<Visibility>,
+) {
   const visibility = ref<Visibility>(initialVisibility)
 
   const setVisibility = (newVisibility: Visibility) => {
@@ -20,9 +23,13 @@ export function provideVisibility(initialVisibility: Visibility = Visibility.PRI
   }
 
   if (syncRef) {
-    watch(syncRef, (newValue) => {
-      visibility.value = newValue
-    }, { immediate: false })
+    watch(
+      syncRef,
+      (newValue) => {
+        visibility.value = newValue
+      },
+      { immediate: false },
+    )
   }
 
   const state: VisibilityState = {
@@ -39,7 +46,9 @@ export function useVisibility() {
   const state = inject(VisibilityKey)
 
   if (!state) {
-    throw new Error('useVisibility must be used within a component that provides visibility state')
+    throw new Error(
+      'useVisibility must be used within a component that provides visibility state',
+    )
   }
 
   return state

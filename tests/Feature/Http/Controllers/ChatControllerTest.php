@@ -79,7 +79,7 @@ describe('ChatController', function (): void {
             $data = [
                 'message' => 'Test chat message',
                 'visibility' => 'private',
-                'model' => ModelName::GPT_4_1_NANO->value,
+                'model' => ModelName::GPT_5_NANO->value,
             ];
 
             $response = $this->post(route('chats.store'), $data);
@@ -104,7 +104,7 @@ describe('ChatController', function (): void {
             $data = [
                 'message' => 'Test message',
                 'visibility' => 'invalid',
-                'model' => ModelName::GPT_4O_MINI->value,
+                'model' => ModelName::GPT_5_MINI->value,
             ];
 
             $response = $this->post(route('chats.store'), $data);

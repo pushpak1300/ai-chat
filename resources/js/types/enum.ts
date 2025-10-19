@@ -14,8 +14,13 @@ export enum Role {
   ASSISTANT = 'assistant',
 }
 
-export enum ChunkType {
+export enum StreamEventType {
+  TEXT_DELTA = 'text_delta',
+  THINKING = 'thinking',
+  ERROR = 'error',
+}
+
+export enum ContentType {
   TEXT = 'text',
   THINKING = 'thinking',
-  META = 'meta',
 }

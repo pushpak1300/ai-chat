@@ -35,10 +35,7 @@ function deleteChat(chatId?: string) {
 <template>
   <AlertDialog v-if="chatId">
     <AlertDialogTrigger as-child>
-      <Button
-        variant="ghost"
-        class="h-8 w-8 hover:text-destructive"
-      >
+      <Button variant="ghost" class="h-8 w-8 hover:text-destructive">
         <Icon icon="lucide:trash-2" class="h-4 w-4" />
       </Button>
     </AlertDialogTrigger>
@@ -46,7 +43,8 @@ function deleteChat(chatId?: string) {
       <AlertDialogHeader>
         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
         <AlertDialogDescription>
-          This action cannot be undone. This will permanently delete the chat and remove all its messages from our servers.
+          This action cannot be undone. This will permanently delete
+          the chat and remove all its messages from our servers.
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
@@ -56,8 +54,12 @@ function deleteChat(chatId?: string) {
           :disabled="deleteForm.processing"
           @click="deleteChat(chatId)"
         >
-          <Icon v-if="deleteForm.processing" icon="lucide:loader-2" class="h-4 w-4 mr-2 animate-spin" />
-          {{ deleteForm.processing ? 'Deleting...' : 'Delete Chat' }}
+          <Icon
+            v-if="deleteForm.processing"
+            icon="lucide:loader-2"
+            class="h-4 w-4 mr-2 animate-spin"
+          />
+          {{ deleteForm.processing ? "Deleting..." : "Delete Chat" }}
         </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>

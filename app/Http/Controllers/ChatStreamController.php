@@ -10,10 +10,11 @@ use App\Models\Chat;
 use Prism\Prism\Prism;
 use App\Models\Message;
 use App\Enums\ModelName;
-use Prism\Prism\Enums\ChunkType;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\ChatStreamRequest;
 use Illuminate\Support\Facades\Response;
+use Prism\Prism\Streaming\Events\ThinkingEvent;
+use Prism\Prism\Streaming\Events\TextDeltaEvent;
 use Prism\Prism\ValueObjects\Messages\UserMessage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Prism\Prism\ValueObjects\Messages\AssistantMessage;
@@ -23,12 +24,12 @@ final class ChatStreamController extends Controller
     public function __invoke(ChatStreamRequest $request, Chat $chat): StreamedResponse
     {
         $userMessage = $request->string('message')->trim()->value();
-        $model = $request->enum('model', ModelName::class, ModelName::GPT_4_1_NANO);
+        $model = $request->enum('model', ModelName::class, ModelName::GPT_5_NANO);
 
         $chat->messages()->create([
             'role' => 'user',
             'parts' => [
-                ChunkType::Text->value => $userMessage,
+                'text' => $userMessage,
             ],
             'attachments' => '[]',
         ]);
@@ -36,7 +37,10 @@ final class ChatStreamController extends Controller
         $messages = $this->buildConversationHistory($chat);
 
         return Response::stream(function () use ($chat, $messages, $model): Generator {
-            $parts = [];
+            $parts = [
+                'text' => '',
+                'thinking' => '',
+            ];
 
             try {
                 $response = Prism::text()
@@ -45,34 +49,47 @@ final class ChatStreamController extends Controller
                     ->withMessages($messages)
                     ->asStream();
 
-                foreach ($response as $chunk) {
-                    $chunkData = [
-                        'chunkType' => $chunk->chunkType->value,
-                        'content' => $chunk->text,
-                    ];
+                foreach ($response as $event) {
+                    $eventData = match ($event::class) {
+                        TextDeltaEvent::class => [
+                            'eventType' => 'text_delta',
+                            'content' => $event->delta,
+                        ],
+                        ThinkingEvent::class => [
+                            'eventType' => 'thinking',
+                            'content' => $event->delta,
+                        ],
+                        default => null,
+                    };
 
-                    if (! isset($parts[$chunk->chunkType->value])) {
-                        $parts[$chunk->chunkType->value] = '';
+                    if ($eventData === null) {
+                        continue;
                     }
 
-                    $parts[$chunk->chunkType->value] .= $chunk->text;
+                    if ($event instanceof TextDeltaEvent) {
+                        $parts['text'] .= $event->delta;
+                    }
 
-                    yield json_encode($chunkData)."\n";
+                    if ($event instanceof ThinkingEvent) {
+                        $parts['thinking'] .= $event->delta;
+                    }
+
+                    yield json_encode($eventData)."\n";
                 }
 
-                if ($parts !== []) {
+                if ($parts['text'] !== '' || $parts['thinking'] !== '') {
                     $chat->messages()->create([
                         'role' => 'assistant',
-                        'parts' => $parts,
+                        'parts' => array_filter($parts, fn ($value) => $value !== ''),
                         'attachments' => '[]',
                     ]);
                     $chat->touch();
                 }
 
             } catch (Throwable $throwable) {
-                Log::error("Chat stream error for chat {$chat->id}: ".$throwable->getMessage());
+                Log::error("Chat stream error for chat $chat->id: ".$throwable->getMessage());
                 yield json_encode([
-                    'chunkType' => 'error',
+                    'eventType' => 'error',
                     'content' => 'Stream failed',
                 ])."\n";
             }

@@ -29,3 +29,14 @@ frankenphp-worker.php
 
 **/.DS_Store
 /.mcp.json
+
+.claude
+.cursor
+.junie
+.gemini
+.vscode/mcp.json
+CLAUDE.md
+AGENTS.md
+GEMINI.md
+opencode.json
+boost.json
